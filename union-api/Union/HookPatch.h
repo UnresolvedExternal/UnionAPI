@@ -2,7 +2,7 @@
 #ifndef __UNION_HOOK_PATCH_H__
 #define __UNION_HOOK_PATCH_H__
 
-#ifdef _COMPILE_STATIC_LIB_
+#ifdef _UNION_API_LIB
 #define DETOURS_INTERNAL
 #endif
 #include <Windows.h>

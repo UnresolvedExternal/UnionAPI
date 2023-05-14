@@ -2,7 +2,7 @@
 #ifndef __UNION_PROCESS_IMM32_COLLECTION_H__
 #define __UNION_PROCESS_IMM32_COLLECTION_H__
 
-#ifdef _COMPILE_STATIC_LIB_
+#ifdef _UNION_API_LIB
 #define DETOURS_INTERNAL
 #endif
 #include "Array.h"
