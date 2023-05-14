@@ -83,7 +83,7 @@ namespace Union {
       Free    = (FreeFunction)    shi_functions[3];
       Msize   = (MsizeFunction)   shi_functions[4];
 
-      ((int(*)())shi_functions[0])();
+      ((int(*)())shi_functions[5])();
     }
   }
 
