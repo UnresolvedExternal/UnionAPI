@@ -54,12 +54,37 @@ namespace Union {
   SharedMemory::SharedMemory() {
     Singletons = nullptr;
     SingletonsCount = 0;
-    Malloc = &malloc;
-    Calloc = &calloc;
-    Realloc = &realloc;
-    Free = &free;
-    Msize = &_msize;
     Owner = &CurrentPlugin;
+
+    Malloc  = &malloc;
+    Calloc  = &calloc;
+    Realloc = &realloc;
+    Free    = &free;
+    Msize   = &_msize;
+
+    HMODULE module = GetModuleHandle( "shw32.dll" );
+    if( module && module != Plugin::GetCurrentModule() ) {
+      void* shi_functions[] = {
+        GetProcAddress( module, "shi_malloc" ),
+        GetProcAddress( module, "shi_calloc" ),
+        GetProcAddress( module, "shi_realloc" ),
+        GetProcAddress( module, "shi_free" ),
+        GetProcAddress( module, "shi_msize" ),
+        GetProcAddress( module, "shi_MemInitDefaultPool" )
+      };
+
+      for( auto&& it : shi_functions )
+        if( it == nullptr )
+          return;
+      
+      Malloc  = (MallocFunction)  shi_functions[0];
+      Calloc  = (CallocFunction)  shi_functions[1];
+      Realloc = (ReallocFunction) shi_functions[2];
+      Free    = (FreeFunction)    shi_functions[3];
+      Msize   = (MsizeFunction)   shi_functions[4];
+
+      ((int(*)())shi_functions[0])();
+    }
   }
 
 
