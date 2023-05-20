@@ -33,7 +33,7 @@ namespace Union {
 
 
   template<typename T>
-  class UNION_API UnionString : public StringBase {
+  class UnionString : public StringBase {
     friend class UnionString<char>;
     friend class UnionString<wchar>;
   protected:
@@ -263,7 +263,6 @@ namespace Union {
 #include "Locale.h"
 
 namespace Union {
-#if !defined(_UNION_API_DLL) || defined(_UNION_API_BUILD)
   template<typename T>
   UnionStringRange<T>::UnionStringRange() : Data( nullptr ), Begin( nullptr ), End( nullptr ) {
   }
@@ -2548,7 +2547,6 @@ namespace Union {
     return true;
   }
 #pragma endregion
-#endif
 }
 #pragma pop_macro("max")
 #pragma pop_macro("min")

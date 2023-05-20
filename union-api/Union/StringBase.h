@@ -11,7 +11,7 @@
 #define STR_SPACES   " \t\r\n\f\v"
 
 namespace Union {
-  class UNION_API StringBase {
+  class StringBase {
   protected:
   public:
     enum Flags {

@@ -9,7 +9,7 @@ typedef void* HMODULE;
 #endif
 
 namespace Union {
-#if defined(_UNION_API_LIB) && !defined(_UNION_API_BUILD)
+#if (defined(_UNION_API_LIB) || defined(_UNION_API_DLL)) && !defined(_UNION_API_BUILD)
 #pragma comment(lib,"UnionApi.lib")
 #endif
   class UNION_API UnionDll {

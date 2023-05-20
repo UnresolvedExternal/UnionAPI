@@ -1,6 +1,8 @@
 #pragma once
 #ifndef __UNION_HOOK_PATCH_H__
 #define __UNION_HOOK_PATCH_H__
+#pragma warning(push)
+#pragma warning(disable:4251)
 
 #ifdef _UNION_API_LIB
 #define DETOURS_INTERNAL
@@ -224,4 +226,5 @@ namespace Union {
 #endif
 }
 
+#pragma warning(pop)
 #endif // __UNION_HOOK_PATCH_H__

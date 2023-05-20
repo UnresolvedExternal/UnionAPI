@@ -209,43 +209,43 @@ namespace Union {
   }
 
 
-  __declspec(noinline) void* MemAlloc( size_t size ) {
+  UNION_API void* MemAlloc( size_t size ) {
     static auto proc = SharedMemory::GetInstance().Malloc;
     return proc( size );
   }
 
 
-  __declspec(noinline) void* MemCalloc( size_t count, size_t size ) {
+  UNION_API void* MemCalloc( size_t count, size_t size ) {
     static auto proc = SharedMemory::GetInstance().Calloc;
     return proc( count, size );
   }
 
 
-  __declspec(noinline) void* MemRealloc( void* memory, size_t size ) {
+  UNION_API void* MemRealloc( void* memory, size_t size ) {
     static auto proc = SharedMemory::GetInstance().Realloc;
     return proc( memory, size );
   }
 
 
-  __declspec(noinline) void MemFree( void* memory ) {
+  UNION_API void MemFree( void* memory ) {
     static auto proc = SharedMemory::GetInstance().Free;
     return proc( memory );
   }
 
 
-  __declspec(noinline) void MemDelete( void* memory ) {
+  UNION_API void MemDelete( void* memory ) {
     static auto proc = SharedMemory::GetInstance().Free;
     return proc( memory );
   }
 
 
-  __declspec(noinline) size_t MemSize( void* memory ) {
+  UNION_API size_t MemSize( void* memory ) {
     static auto proc = SharedMemory::GetInstance().Msize;
     return proc( memory );
   }
 
 
-  void* CreateSharedSingleton( const char* globalName, void* (*allocation)() ) {
+  UNION_API void* CreateSharedSingleton( const char* globalName, void* (*allocation)() ) {
     auto& memory = SharedMemory::GetInstance();
     int index = memory.SearchSingleton( globalName );
     if( index != -1 )
@@ -259,7 +259,7 @@ namespace Union {
   }
 
 
-  void FreeSharedSingleton( const char* globalName, void(*destructor)(void*) ) {
+  UNION_API void FreeSharedSingleton( const char* globalName, void(*destructor)(void*) ) {
     auto& memory = SharedMemory::GetInstance();
     int index = memory.SearchSingleton( globalName );
     if( index == -1 )
@@ -269,24 +269,4 @@ namespace Union {
     if( address )
       destructor( address );
   }
-}
-
-
-__declspec(noinline) void* operator new (size_t size) {
-  return Union::MemAlloc( size );
-}
-
-
-__declspec(noinline) void* operator new []( size_t size ) {
-  return Union::MemAlloc( size );
-}
-
-
-__declspec(noinline) void operator delete (void* memory) {
-  Union::MemFree( memory );
-}
-
-
-__declspec(noinline) void operator delete []( void* memory ) {
-  Union::MemFree( memory );
 }

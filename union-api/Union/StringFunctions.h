@@ -12,7 +12,6 @@
 // #include 	<ctype.h>
 
 namespace Union {
-#if !defined(_UNION_API_DLL) || defined(_UNION_API_BUILD)
   inline size_t str_get_length( const char* str ) {
     return std::strlen( str );
   }
@@ -638,7 +637,6 @@ namespace Union {
   inline int str_msgbox( const wchar* message, int flags ) {
     return str_msgbox( message, L"", flags );
   }
-#endif
 #endif
 }
 

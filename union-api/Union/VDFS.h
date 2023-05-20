@@ -1,6 +1,8 @@
 #pragma once
 #ifndef __UNION_VDFS_H__
 #define __UNION_VDFS_H__
+#pragma warning(push)
+#pragma warning(disable:4251)
 
 #define VDF_VIRTUAL 1
 #define VDF_PHYSICAL 2
@@ -71,6 +73,11 @@ namespace Union {
       */
       size_t GetSize() const;
       /**
+      * @brief Returns the timestamp of the current file
+      * @return The timestamp of the file
+      */
+      uint GetTimestamp() const;
+      /**
       * @brief Increases the count of the references for this file
       * @return A new count of references
       */
@@ -87,6 +94,7 @@ namespace Union {
       * @return A dirrefence between two files
       */
       static int Sortion_ByFullName( File* const& l, File* const& r );
+      static int Sortion_ByFullNameS( File* const& l, StringANSI const& r );
       /**
       * @brief Sortion function for the files using the short names
       * @param l The left file
@@ -94,6 +102,7 @@ namespace Union {
       * @return A dirrefence between two files
       */
       static int Sortion_ByName( File* const& l, File* const& r );
+      static int Sortion_ByNameS( File* const& l, StringANSI const& r );
     };
 
     class Volume {
@@ -125,6 +134,21 @@ namespace Union {
       * @return The array with files
       */
       const Array<const File*>& GetFileList() const;
+      /**
+      * @brief Returns the name of this volume
+      * @return The string name
+      */
+      const StringANSI& GetName() const;
+      /**
+      * @brief Returns the full name of this volume
+      * @return The string name
+      */
+      const StringANSI& GetFullName() const;
+      /**
+      * @brief Returns the raw timestamp of this volume
+      * @return The raw timestamp
+      */
+      const uint GetTimestamp() const;
     };
 
   protected:
@@ -135,6 +159,7 @@ namespace Union {
     } Virtual, Physical;
 
     const File* GetFile_ByFullName( const StringANSI& name, IN OUT int& system ) const;
+    Array<const File*> GetFileVariants_ByFullName( const StringANSI& name, IN OUT int& systems ) const;
     void LoadDirectoryVDF( const StringANSI& rootDirectory );
     void LoadDirectoryFiles( const StringANSI& rootDirectory, const StringANSI& localDirectory = "" );
     void InitDefault();
@@ -154,6 +179,13 @@ namespace Union {
     */
     const File* GetFile( const StringANSI& name, IN OUT int& systems ) const;
     /**
+    * @brief Returns file list from all systems
+    * @param name Short (without specified directory) or local (starts from the root directory) name of the file
+    * @param systems In what systems the file can be found: VDF_VIRTUAL, VDF_PHYSICAL, VDF_PHYSICAL_FIRST
+    * @return The list of pointer to the found files
+    */
+    Array<const File*> GetFileVariants( const StringANSI& name, IN int systems ) const;
+    /**
     * @brief Returns file list from the vdf volumes
     * @return The array with files 
     */
@@ -163,6 +195,19 @@ namespace Union {
     * @return The array with files
     */
     const Array<const File*>& GetPhysicalFileList() const;
+    /**
+    * @brief Returns a loaded volume list
+    * @return The array with volumes
+    */
+    const Array<const Volume*>& GetVolumes() const;
+    /**
+    * @brief Loads files from specified firectory
+    */
+    void PostLoadDirectoryFiles( const StringANSI& directory );
+    /**
+    * @brief Loads VDF volumes from specified firectory
+    */
+    void PostLoadDirectoryVDF( const StringANSI& directory );
     /**
     * @brief Returns the common file system
     * @return The pointer to the system
@@ -447,6 +492,11 @@ namespace Union {
   }
 
 
+  inline uint VDFS::File::GetTimestamp() const {
+    return Timestamp;
+  }
+
+
   inline int VDFS::File::Acquire() {
     return ++ReferenceCount;
   }
@@ -466,8 +516,18 @@ namespace Union {
   }
 
 
+  inline int VDFS::File::Sortion_ByFullNameS( File* const& l, StringANSI const& r ) {
+    return l->FullNameVirtual.GetDifference( r );
+  }
+
+
   inline int VDFS::File::Sortion_ByName( File* const& l, File* const& r ) {
     return l->Name.GetDifference( r->Name );
+  }
+
+
+  inline int VDFS::File::Sortion_ByNameS( File* const& l, StringANSI const& r ) {
+    return l->Name.GetDifference( r );
   }
 #pragma endregion
 
@@ -564,6 +624,24 @@ namespace Union {
 
   inline const Array<const VDFS::File*>& VDFS::Volume::GetFileList() const {
     return (Array<const VDFS::File*>&)Files_ByFullName;
+  }
+
+
+
+  const StringANSI& VDFS::Volume::GetName() const {
+    return Name;
+  }
+
+
+
+  const StringANSI& VDFS::Volume::GetFullName() const {
+    return FullName;
+  }
+
+
+
+  const uint VDFS::Volume::GetTimestamp() const {
+    return Timestamp;
   }
 #pragma endregion
 
@@ -690,6 +768,58 @@ namespace Union {
   }
 
 
+  inline Array<const VDFS::File*> VDFS::GetFileVariants_ByFullName( const StringANSI& name, IN OUT int& systems ) const {
+    Array<const VDFS::File*> fileList;
+
+    if( systems & VDF_PHYSICAL ) {
+      uint index = Physical.Files_ByFullName.IndexOf<File::Sortion_ByFullNameS>( name );
+      if( index != -1 ) {
+        auto file = Physical.Files_ByFullName[index];
+        fileList.Insert( file );
+      }
+    }
+
+    if( systems & VDF_VIRTUAL ) {
+      for( auto&& v : Volumes ) {
+        uint index = v->Files_ByFullName.IndexOf<File::Sortion_ByFullNameS>( name );
+        if( index != -1 ) {
+          auto file = v->Files_ByFullName[index];
+          fileList.Insert( file );
+        }
+      }
+    }
+
+    return fileList.Share();
+  }
+
+
+  inline Array<const VDFS::File*> VDFS::GetFileVariants( const StringANSI& name, IN int systems ) const {
+    if( name.Contains( "\\" ) )
+      return GetFileVariants_ByFullName( name, systems ).Share();
+
+    Array<const VDFS::File*> fileList;
+    if( systems & VDF_PHYSICAL ) {
+      uint index = Physical.Files_ByName.IndexOf<File::Sortion_ByNameS>( name );
+      if( index != -1 ) {
+        auto file = Physical.Files_ByName[index];
+        fileList.Insert( file );
+      }
+    }
+
+    if( systems & VDF_VIRTUAL ) {
+      for( auto&& v : Volumes ) {
+        uint index = v->Files_ByName.IndexOf<File::Sortion_ByNameS>( name );
+        if( index != -1 ) {
+          auto file = v->Files_ByName[index];
+          fileList.Insert( file );
+        }
+      }
+    }
+
+    return fileList.Share();
+  }
+
+
   inline const Array<const VDFS::File*>& VDFS::GetVirtualFileList() const {
     return (Array<const VDFS::File*>&)Virtual.Files_ByFullName;
   }
@@ -700,7 +830,15 @@ namespace Union {
   }
 
 
+  const Array<const VDFS::Volume*>& VDFS::GetVolumes() const {
+    return (Array<const VDFS::Volume*>&)Volumes;
+  }
+
+
   inline void VDFS::LoadDirectoryVDF( const StringANSI& rootDirectory ) {
+    if( !rootDirectory.IsExistsAsDirectory() )
+      return;
+
     WIN32_FIND_DATAA findData;
     HANDLE findHandle = ::FindFirstFileA( rootDirectory + "\\*.*", &findData );
     if( findHandle != INVALID_HANDLE_VALUE ) {
@@ -716,6 +854,9 @@ namespace Union {
 
 
   inline void VDFS::LoadDirectoryFiles( const StringANSI& rootDirectory, const StringANSI& localDirectory ) {
+    if( !StringANSI::Format( "%s%s", rootDirectory, localDirectory ).IsExistsAsDirectory() )
+      return;
+
     WIN32_FIND_DATAA findData;
     StringANSI searchFilter = StringANSI::Format( "%s%s*.*", rootDirectory, localDirectory );
     HANDLE findHandle = ::FindFirstFileA( searchFilter, &findData );
@@ -749,6 +890,16 @@ namespace Union {
       } while( ::FindNextFileA( findHandle, &findData ) );
       FindClose( findHandle );
     }
+  }
+
+
+  void VDFS::PostLoadDirectoryFiles( const StringANSI& directory ) {
+    LoadDirectoryFiles( directory, "" );
+  }
+
+
+  void VDFS::PostLoadDirectoryVDF( const StringANSI& directory ) {
+    LoadDirectoryVDF( directory );
   }
 
 
@@ -920,4 +1071,5 @@ namespace Union {
 #endif
 }
 
+#pragma warning(pop)
 #endif // __UNION_VDFS_H__

@@ -1,6 +1,8 @@
 #pragma once
 #ifndef __UNION_VDFS_STREAM_H__
 #define __UNION_VDFS_STREAM_H__
+#pragma warning(push)
+#pragma warning(disable:4251)
 
 #include "Types.h"
 #include "Stream.h"
@@ -831,4 +833,5 @@ namespace Union {
 #pragma pop_macro("max")
 #pragma pop_macro("min")
 
+#pragma warning(pop)
 #endif // __UNION_VDFS_STREAM_H__

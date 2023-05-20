@@ -1,6 +1,8 @@
 #pragma once
 #ifndef __UNION_PROCESS_IMM32_COLLECTION_H__
 #define __UNION_PROCESS_IMM32_COLLECTION_H__
+#pragma warning(push)
+#pragma warning(disable:4251)
 
 #ifdef _UNION_API_LIB
 #define DETOURS_INTERNAL
@@ -8,7 +10,9 @@
 #include "Array.h"
 #include "String.h"
 #include "Memory.h"
+#if !defined(_UNION_API_DLL) || defined(_UNION_API_BUILD)
 #include "Thirdparty/Detours.h"
+#endif
 
 #include <Windows.h>
 #include <dbghelp.h>
@@ -251,5 +255,5 @@ namespace Union {
   }
 #endif
 }
-
+#pragma warning(pop)
 #endif // __UNION_PROCESS_IMM32_COLLECTION_H__
