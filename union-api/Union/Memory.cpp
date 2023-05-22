@@ -63,7 +63,7 @@ namespace Union {
     Msize   = &_msize;
 
     HMODULE module = GetModuleHandle( "shw32.dll" );
-    if( module && module != Dll::FindNearestModule() ) {
+    if( module /*&& module != Dll::FindNearestModule()*/ ) {
       void* shi_functions[] = {
         GetProcAddress( module, "shi_malloc" ),
         GetProcAddress( module, "shi_calloc" ),
@@ -198,8 +198,9 @@ namespace Union {
 
       CloseHandle( process );
     }
-
+    
     UnionSharedMemoryInstance = new SharedMemory();
+    StringANSI::Format( "New shared memory was initialized: %x", UnionSharedMemoryInstance ).StdPrintLine();
   }
 
 
