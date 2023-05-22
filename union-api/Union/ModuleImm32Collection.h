@@ -10,6 +10,7 @@
 #include "Array.h"
 #include "String.h"
 #include "Memory.h"
+#include "Dll.h"
 #if !defined(_UNION_API_DLL) || defined(_UNION_API_BUILD)
 #include "Thirdparty/Detours.h"
 #endif
@@ -32,7 +33,7 @@ namespace Union {
     };
 
     struct ModuleImm32Collection {
-      HMODULE Module;
+      Dll* Dll;
       void* BaseAddress;
       size_t Size;
       Array<SegmentInfo*> Segments;
@@ -51,8 +52,8 @@ namespace Union {
     void FillModuleInfo( ModuleImm32Collection* moduleImm32 );
     void GetImm32For( void* address, ModuleImm32Collection* moduleImm32, OUT Array<void*>& addresses, OUT Array<void*>& offsets );
   public:
-    void AnalizeModule( HMODULE module );
-    void GetImm32For( void* address, HMODULE module, OUT Array<void*>& addresses, OUT Array<void*>& offsets );
+    void AnalizeModule( Dll* dll );
+    void GetImm32For( void* address, Dll* dll, OUT Array<void*>& addresses, OUT Array<void*>& offsets );
     void GetImm32For( void* address, OUT Array<void*>& addresses, OUT Array<void*>& offsets );
     static ProcessImm32Collection& GetInstance();
     static ProcessImm32Collection* CreateSpecificCollection();
@@ -62,7 +63,8 @@ namespace Union {
 #if !defined(_UNION_API_DLL) || defined(_UNION_API_BUILD)
   inline ProcessImm32Collection::ProcessImm32Collection() {
     StringANSI( "Creating new ProcessImm32Collection . . ." ).StdPrintLine();
-    AnalizeModule( GetModuleHandle( nullptr ) );
+    Dll* dll = Dll::Find( GetModuleHandle( nullptr ) );
+    AnalizeModule( dll );
   }
 
 
@@ -132,37 +134,36 @@ namespace Union {
 
 
   inline void ProcessImm32Collection::CollectSegments( ModuleImm32Collection* moduleImm32 ) {
-    uint moduleBase = (uint)moduleImm32->Module;
-    IMAGE_NT_HEADERS* ntHeader = ImageNtHeader( moduleImm32->Module );
-    PIMAGE_SECTION_HEADER sectionHeader = IMAGE_FIRST_SECTION( ntHeader );
-    uint segments = ntHeader->FileHeader.NumberOfSections;
-    for( uint i = 0; i < segments; i++ ) {
+    auto dll = moduleImm32->Dll;
+    auto moduleBase = (uint)dll->GetHandle();
+    auto ntHeaders = dll->GetNTHeaders();
+    auto sectionHeader = IMAGE_FIRST_SECTION( ntHeaders );
+
+    auto sectionsCount = ntHeaders->FileHeader.NumberOfSections;
+    for( WORD i = 0; i < sectionsCount; i++, sectionHeader++ ) {
       SegmentInfo* segmentInfo = new SegmentInfo();
-      memcpy( segmentInfo->Name, sectionHeader->Name, 8 );
+      memcpy( segmentInfo->Name, sectionHeader->Name, sizeof( sectionHeader->Name ) );
       segmentInfo->BaseAddress = (void*)(moduleBase + sectionHeader->VirtualAddress);
       segmentInfo->Size = sectionHeader->Misc.VirtualSize;
       moduleImm32->Segments.Insert( segmentInfo );
-      sectionHeader++;
     }
   }
 
 
   // TODO: collect inline assembler memory when it will be done
   inline void ProcessImm32Collection::FillModuleInfo( ModuleImm32Collection* moduleImm32 ) {
-    HMODULE module = moduleImm32->Module;
-    MODULEINFO sysModuleInfo;
-    memset( &sysModuleInfo, 0, sizeof( sysModuleInfo ) );
-    if( GetModuleInformation( GetCurrentProcess(), module, &sysModuleInfo, sizeof( sysModuleInfo ) ) == 0 )
+    auto dll = moduleImm32->Dll;
+
+    if( !dll->GetRange( moduleImm32->BaseAddress, moduleImm32->Size ) )
       return;
-    
-    moduleImm32->BaseAddress = sysModuleInfo.lpBaseOfDll;
-    moduleImm32->Size = sysModuleInfo.SizeOfImage;
 
     CollectSegments( moduleImm32 );
 
-    bool isUnionModule = GetProcAddress( module, "UnionSharedMemoryInstance" );
+    bool isMainModule = dll->GetHandle() == GetModuleHandle( nullptr );
+    bool isUnionDll = !isMainModule && dll->GetProcedureAddress( "UnionSharedMemoryInstance" );
+
     for( auto&& segment : moduleImm32->Segments ) {
-      if( !isUnionModule ) {
+      if( !isUnionDll ) {
         // Analize all instructions which
         // theoretically can has imm32 in
         // the address or offset context.
@@ -186,17 +187,15 @@ namespace Union {
   }
 
 
-  inline void ProcessImm32Collection::AnalizeModule( HMODULE module ) {
+  inline void ProcessImm32Collection::AnalizeModule( Dll* dll ) {
     for( auto moduleImm32 : ModuleImm32Collections )
-      if( moduleImm32->Module == module )
+      if( moduleImm32->Dll == dll )
         return;
-    
-    char moduleName[1024 + 1];
-    GetModuleFileNameA( module, moduleName, 1024 );
-    StringANSI::Format( "Analyzing module: %t", moduleName ).StdPrintLine();
+
+    StringANSI::Format( "Analyzing module: %s", dll->GetName() ).StdPrintLine();
 
     ModuleImm32Collection* moduleImm32 = new ModuleImm32Collection();
-    moduleImm32->Module = module;
+    moduleImm32->Dll = dll;
     FillModuleInfo( moduleImm32 );
     ModuleImm32Collections.Insert( moduleImm32 );
 
@@ -241,10 +240,10 @@ namespace Union {
   }
 
 
-  inline void ProcessImm32Collection::GetImm32For( void* address, HMODULE module, OUT Array<void*>& addresses, OUT Array<void*>& offsets ) {
-    AnalizeModule( module );
+  inline void ProcessImm32Collection::GetImm32For( void* address, Dll* dll, OUT Array<void*>& addresses, OUT Array<void*>& offsets ) {
+    AnalizeModule( dll );
     for( auto moduleImm32 : ModuleImm32Collections )
-      if( moduleImm32->Module == module )
+      if( moduleImm32->Dll == dll )
         return GetImm32For( address, moduleImm32, addresses, offsets );
   }
 

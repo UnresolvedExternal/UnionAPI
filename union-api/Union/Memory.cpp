@@ -3,13 +3,12 @@
 #include <psapi.h>
 #include "Types.h"
 #include "Memory.h"
-#include "Plugin.h"
+#include "Dll.h"
+#include "Thread.h"
+#include "HookPatch.h"
 #pragma comment(lib, "psapi.lib")
 
 namespace Union {
-  _export_c_ Plugin& CurrentPlugin;
-
-
   typedef void* (*MallocFunction)(size_t size);
   typedef void* (*CallocFunction)(size_t count, size_t size);
   typedef void* (*ReallocFunction)(void* memory, size_t size);
@@ -29,9 +28,9 @@ namespace Union {
 
 
   struct SharedMemory {
-    Plugin* Owner;
     SharedSingleton** Singletons;
     int SingletonsCount;
+    Dll* Dll;
 
     MallocFunction Malloc;
     CallocFunction Calloc;
@@ -46,7 +45,8 @@ namespace Union {
     virtual void* Release( const char* singletonName );
     void* operator new(size_t size);
     void operator delete(void* memory);
-    static SharedMemory* InitializeInstance();
+    static void InitializeInstance();
+    static void InitializeDll();
     static SharedMemory& GetInstance();
   };
 
@@ -54,7 +54,7 @@ namespace Union {
   SharedMemory::SharedMemory() {
     Singletons = nullptr;
     SingletonsCount = 0;
-    Owner = &CurrentPlugin;
+    Dll = nullptr;
 
     Malloc  = &malloc;
     Calloc  = &calloc;
@@ -63,7 +63,7 @@ namespace Union {
     Msize   = &_msize;
 
     HMODULE module = GetModuleHandle( "shw32.dll" );
-    if( module && module != Plugin::GetCurrentModule() ) {
+    if( module && module != Dll::FindNearestModule() ) {
       void* shi_functions[] = {
         GetProcAddress( module, "shi_malloc" ),
         GetProcAddress( module, "shi_calloc" ),
@@ -173,7 +173,7 @@ namespace Union {
   _export_c_ SharedMemory* UnionSharedMemoryInstance = nullptr;
 
 
-  SharedMemory* SharedMemory::InitializeInstance() {
+  void SharedMemory::InitializeInstance() {
     DWORD processId = GetCurrentProcessId();
     HMODULE modules[1024];
     HANDLE process;
@@ -189,7 +189,8 @@ namespace Union {
             auto object = *(SharedMemory**)address;
             if( object ) {
               CloseHandle( process );
-              return object;
+              UnionSharedMemoryInstance = object;
+              return;
             }
           }
         }
@@ -199,48 +200,60 @@ namespace Union {
     }
 
     UnionSharedMemoryInstance = new SharedMemory();
-    return UnionSharedMemoryInstance;
+  }
+
+
+  void SharedMemory::InitializeDll() {
+    HANDLE handle = Dll::FindNearestModule();
+    if( handle ) {
+      UnionSharedMemoryInstance->Dll = Dll::Find( handle );
+      ProcessImm32Collection::GetInstance().AnalizeModule( UnionSharedMemoryInstance->Dll );
+      HookProviderPatch::UpdateInRange( UnionSharedMemoryInstance->Dll );
+    }
   }
 
 
   SharedMemory& SharedMemory::GetInstance() {
-    static SharedMemory* instance = InitializeInstance();
-    return *instance;
+    if( UnionSharedMemoryInstance == nullptr ) {
+      InitializeInstance();
+      InitializeDll();
+    }
+    return *UnionSharedMemoryInstance;
   }
 
 
   UNION_API void* MemAlloc( size_t size ) {
-    static auto proc = SharedMemory::GetInstance().Malloc;
+    /*static*/ auto proc = SharedMemory::GetInstance().Malloc;
     return proc( size );
   }
 
 
   UNION_API void* MemCalloc( size_t count, size_t size ) {
-    static auto proc = SharedMemory::GetInstance().Calloc;
+    /*static*/ auto proc = SharedMemory::GetInstance().Calloc;
     return proc( count, size );
   }
 
 
   UNION_API void* MemRealloc( void* memory, size_t size ) {
-    static auto proc = SharedMemory::GetInstance().Realloc;
+    /*static*/ auto proc = SharedMemory::GetInstance().Realloc;
     return proc( memory, size );
   }
 
 
   UNION_API void MemFree( void* memory ) {
-    static auto proc = SharedMemory::GetInstance().Free;
+    /*static*/ auto proc = SharedMemory::GetInstance().Free;
     return proc( memory );
   }
 
 
   UNION_API void MemDelete( void* memory ) {
-    static auto proc = SharedMemory::GetInstance().Free;
+    /*static*/ auto proc = SharedMemory::GetInstance().Free;
     return proc( memory );
   }
 
 
   UNION_API size_t MemSize( void* memory ) {
-    static auto proc = SharedMemory::GetInstance().Msize;
+    /*static*/ auto proc = SharedMemory::GetInstance().Msize;
     return proc( memory );
   }
 

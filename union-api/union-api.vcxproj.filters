@@ -11,12 +11,6 @@
     <ClCompile Include="Union\Memory.cpp">
       <Filter>Union</Filter>
     </ClCompile>
-    <ClCompile Include="Union\Plugin.cpp">
-      <Filter>Union</Filter>
-    </ClCompile>
-    <ClCompile Include="Union\UnionDll.cpp">
-      <Filter>Union</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Union\Array.h">
@@ -46,9 +40,6 @@
     <ClInclude Include="Union\ModuleImm32Collection.h">
       <Filter>Union</Filter>
     </ClInclude>
-    <ClInclude Include="Union\Plugin.h">
-      <Filter>Union</Filter>
-    </ClInclude>
     <ClInclude Include="Union\Signature.h">
       <Filter>Union</Filter>
     </ClInclude>
@@ -70,9 +61,6 @@
     <ClInclude Include="Union\Types.h">
       <Filter>Union</Filter>
     </ClInclude>
-    <ClInclude Include="Union\UnionDll.h">
-      <Filter>Union</Filter>
-    </ClInclude>
     <ClInclude Include="Union\Updater.h">
       <Filter>Union</Filter>
     </ClInclude>
@@ -80,6 +68,9 @@
       <Filter>Union</Filter>
     </ClInclude>
     <ClInclude Include="Union\VDFSStream.h">
+      <Filter>Union</Filter>
+    </ClInclude>
+    <ClInclude Include="Union\Dll.h">
       <Filter>Union</Filter>
     </ClInclude>
   </ItemGroup>

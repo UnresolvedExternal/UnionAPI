@@ -8,7 +8,6 @@
 #pragma comment(lib,"wininet.lib")
 #include "Array.h"
 #include "String.h"
-#include "Plugin.h"
 #include "Thirdparty/Zlib.h"
 
 namespace Union {

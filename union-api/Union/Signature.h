@@ -10,7 +10,7 @@
 namespace Union {
 #define SIGNATURE_OF(what) Signature(what, #what)
 
-  /*
+  /**
    * The class stores the information about the function in the signature context
    */
   class UNION_API Signature {
@@ -26,40 +26,42 @@ namespace Union {
   public:
     Signature();
     /**
-    * @brief Creates signature using a pattern
-    * @param detailsPtr The base funciton for which the signature will be created
-    * @param baseStorageClass Defines the final storage class of the detailed function
-    */
+     * @brief Creates signature using a pattern
+     * @param detailsPtr The base funciton for which the signature will be created
+     * @param baseStorageClass Defines the final storage class of the detailed function
+     */
     template<typename T>
     Signature( T detailsPtr, const StringANSI& baseStorageClass );
     /**
-    * @brief Returns address of the associated with this signature function
-    * @return Address of the associated function
-    */
+     * @brief Returns address of the associated with this signature function
+     * @return Address of the associated function
+     */
     void* GetAddress() const;
     /**
-    * @brief Returns readable instance of this signature
-    * @return ANSI String
-    */
+     * @brief Returns readable instance of this signature
+     * @return ANSI String
+     */
     StringANSI ToString() const;
     /**
-    * @brief Returns found compatible signature from the specified file
-    * @param signature Base signature for which to search
-    * @param fileName In which file to search
-    * @return The pointer to compatible signature or nullptr if not found
-    */
+     * @brief Returns found compatible signature from the specified file
+     * @param signature Base signature for which to search
+     * @param fileName In which file to search
+     * @return The pointer to compatible signature or nullptr if not found
+     */
     static Signature* GetCompatibleSignature( Signature* signature, const String& fileName );
     /**
-    * @brief Returns the sortion direction based on the comparison of the two signature pointers
-    * @param l The left signature
-    * @param r The right signature
-    * @return The sortion direction
-    */
+     * @brief Returns the sortion direction based on the comparison of the two signature pointers
+     * @param l The left signature
+     * @param r The right signature
+     * @return The sortion direction
+     */
     static int SortionFunc( Signature* const& l, Signature* const& r );
   };
 
 
-  // The class containts list of the functions information in the signature context
+  /**
+   * The class containts list of the functions information in the signature context
+   */
   class UNION_API SignatureFile {
     String FileName;
     Array<Signature*> Signatures;
@@ -68,10 +70,10 @@ namespace Union {
     static Array<SignatureFile*>& GetSignatureFiles();
   public:
     /**
-    * @brief Returns the file of signatures
-    * @param fileName Name of the file
-    * @return The file of signatures
-    */
+     * @brief Returns the file of signatures
+     * @param fileName Name of the file
+     * @return The file of signatures
+     */
     static const Array<Signature*>& GetFileSignatures( const String& fileName );
   };
 

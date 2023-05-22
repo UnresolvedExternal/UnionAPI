@@ -373,8 +373,6 @@
   <ItemGroup>
     <ClCompile Include="union-api.cpp" />
     <ClCompile Include="Union\Memory.cpp" />
-    <ClCompile Include="Union\Plugin.cpp" />
-    <ClCompile Include="Union\UnionDll.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Union\Array.h" />
@@ -383,10 +381,10 @@
     <ClInclude Include="Union\HookPartial.h" />
     <ClInclude Include="Union\HookPatch.h" />
     <ClInclude Include="Union\HookProto.h" />
+    <ClInclude Include="Union\Dll.h" />
     <ClInclude Include="Union\Locale.h" />
     <ClInclude Include="Union\Memory.h" />
     <ClInclude Include="Union\ModuleImm32Collection.h" />
-    <ClInclude Include="Union\Plugin.h" />
     <ClInclude Include="Union\Signature.h" />
     <ClInclude Include="Union\Stream.h" />
     <ClInclude Include="Union\String.h" />
@@ -394,7 +392,6 @@
     <ClInclude Include="Union\StringFunctions.h" />
     <ClInclude Include="Union\Thread.h" />
     <ClInclude Include="Union\Types.h" />
-    <ClInclude Include="Union\UnionDll.h" />
     <ClInclude Include="Union\Updater.h" />
     <ClInclude Include="Union\VDFS.h" />
     <ClInclude Include="Union\VDFSStream.h" />

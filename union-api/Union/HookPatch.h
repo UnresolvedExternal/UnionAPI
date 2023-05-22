@@ -19,8 +19,6 @@
 
 namespace Union {
   class UNION_API HookProviderPatch : public HookProvider {
-    friend class UnionDll;
-
     void* OriginalPtr;    // Hook from
     void* DestinationPtr; // Hook to
     void* DetoursPtr;     // Where to return
@@ -37,7 +35,6 @@ namespace Union {
     void Detach();
     static void PatchAddress( void* where, void* what );
     static void PatchOffset( void* where, void* what );
-    static void ModuleInitialized( HMODULE module );
   public:
     HookProviderPatch();
     virtual bool IsEnabled();
@@ -45,6 +42,8 @@ namespace Union {
     virtual bool Enable();
     virtual bool Disable();
     virtual void* GetReturnAddress();
+    static void UpdateInRange( void* where, size_t size );
+    static void UpdateInRange( Dll* dll );
   };
 
 
@@ -119,14 +118,40 @@ namespace Union {
   }
 
 
-  inline void HookProviderPatch::ModuleInitialized( HMODULE module ) {
-    auto& pcc = ProcessImm32Collection::GetInstance();
+  inline void HookProviderPatch::UpdateInRange( void* where, size_t size ) {
+    void* whereEnd = (byte*)where + size;
+    auto& imm = ProcessImm32Collection::GetInstance();
     auto hooks = GetHookList();
     for( auto hook : hooks ) {
       Array<void*> addresses, offsets;
       auto node = hook->GetLast();
-      pcc.GetImm32For( node->OriginalPtr, addresses, offsets );
-      
+      imm.GetImm32For( node->OriginalPtr, addresses, offsets );
+
+      for( auto address : addresses ) {
+        if( address >= where && address < whereEnd ) {
+          PatchAddress( address, node->DestinationPtr );
+          node->Addresses.Insert( address );
+        }
+      }
+
+      for( auto offset : offsets ) {
+        if( offset >= where && offset < whereEnd ) {
+          PatchOffset( offset, node->DestinationPtr );
+          node->Offsets.Insert( offset );
+        }
+      }
+    }
+  }
+
+
+  inline void HookProviderPatch::UpdateInRange( Dll* dll ) {
+    auto& imm = ProcessImm32Collection::GetInstance();
+    auto hooks = GetHookList();
+    for( auto hook : hooks ) {
+      Array<void*> addresses, offsets;
+      auto node = hook->GetLast();
+      imm.GetImm32For( node->OriginalPtr, dll, addresses, offsets );
+
       for( auto address : addresses ) {
         PatchAddress( address, node->DestinationPtr );
         node->Addresses.Insert( address );

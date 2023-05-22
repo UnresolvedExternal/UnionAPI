@@ -5,16 +5,15 @@
 #include "Union/Array.h"
 #include "Union/VDFS.h"
 #include "Union/Hook.h"
-#include "Union/Plugin.h"
 #include "Union/Stream.h"
 #include "Union/String.h"
 #include "Union/Thread.h"
-#include "Union/UnionDll.h"
 #include "Union/Updater.h"
+#include "Union/Dll.h"
 
 int main()
 {
-    std::cout << "Hello World!\n";
+  Union::StringANSI( "Hello, world!" ).StdPrintLine();
 }
 
 // Запуск программы: CTRL+F5 или меню "Отладка" > "Запуск без отладки"
