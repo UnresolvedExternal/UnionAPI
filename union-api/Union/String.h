@@ -2188,7 +2188,7 @@ namespace Union {
     if( !writer.IsOpened() )
       return false;
 
-    bool ok = WriteToFile( &writer, encoding );
+    return WriteToFile( &writer, encoding );
   }
 
 
@@ -2198,7 +2198,7 @@ namespace Union {
     if( !writer.IsOpened() )
       return false;
 
-    bool ok = WriteToFile( &writer, encoding );
+    return WriteToFile( &writer, encoding );
   }
 
 
@@ -2490,7 +2490,8 @@ namespace Union {
     if( size == 0 ) {
       return false;
     }
-    StringUTF16 wideString( size, 0 );
+    StringUTF16 wideString;
+    wideString.SetLength( size );
     if( MultiByteToWideChar( codepage, 0, input.ToChar(), -1, wideString.ToChar(), size ) == 0 ) {
       return false;
     }

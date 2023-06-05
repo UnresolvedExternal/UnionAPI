@@ -23,7 +23,7 @@ namespace Union {
 }
 
 
-#if 0
+#if 1
 inline void* operator new (size_t size) {
   return Union::MemAlloc( size );
 }

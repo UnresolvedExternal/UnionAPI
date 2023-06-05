@@ -11,19 +11,21 @@ namespace Union {
   inline Hook<Signature> CreateHook( void* originPtr, Signature destPtr, HookType type = HookType::Hook_Auto ) {
     HookProvider* provider = nullptr;
 
-    if( provider == nullptr && type == HookType::Hook_Auto || type == HookType::Hook_CallPatch ) {
-      provider = new HookProviderPatch();
-      if( !provider->Enable( originPtr, *(void**)&destPtr ) ) {
-        delete provider;
-        provider = nullptr;
+    if( originPtr && destPtr ) {
+      if( provider == nullptr && type == HookType::Hook_Auto || type == HookType::Hook_CallPatch ) {
+        provider = new HookProviderPatch();
+        if( !provider->Enable( originPtr, *(void**)&destPtr ) ) {
+          delete provider;
+          provider = nullptr;
+        }
       }
-    }
 
-    if( provider == nullptr && type == HookType::Hook_Auto || type == HookType::Hook_Detours ) {
-      provider = new HookProviderDetours();
-      if( !provider->Enable( originPtr, *(void**)&destPtr ) ) {
-        delete provider;
-        provider = nullptr;
+      if( provider == nullptr && type == HookType::Hook_Auto || type == HookType::Hook_Detours ) {
+        provider = new HookProviderDetours();
+        if( !provider->Enable( originPtr, *(void**)&destPtr ) ) {
+          delete provider;
+          provider = nullptr;
+        }
       }
     }
 
@@ -32,8 +34,12 @@ namespace Union {
 
 
   inline Hook<PartialHookProc> CreatePartialHook( void* whereFrom, PartialHookProc whereTo ) {
-    HookProviderPartial* provider = new HookProviderPartial();
-    provider->Enable( whereFrom, whereTo );
+    HookProviderPartial* provider = nullptr;
+    if( whereFrom && whereTo ) {
+      provider = new HookProviderPartial();
+      provider->Enable( whereFrom, whereTo );
+    }
+
     return Hook<PartialHookProc>( provider );
   }
 

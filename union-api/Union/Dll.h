@@ -39,7 +39,7 @@ namespace Union {
 
     static Dll* Load( const char* dllName, bool asResource = false );
     static Dll* Load( const wchar_t* dllName, bool asResource = false );
-    static Dll* Find( const String& name );
+    static Dll* Find( const StringANSI& name );
     static Dll* Find( HANDLE module );
     static HANDLE FindNearestModule( void* where = &FindNearestModule );
   protected:
@@ -126,21 +126,16 @@ namespace Union {
 
 
   inline Dll* Dll::Load( const char* dllName, bool asResource ) {
-#ifdef UNICODE
-    String fullName;
-    StringConverter::ANSIToUTF16( dllName, fullName );
-    String shortName = fullName.GetFileName();
-#else
-    String fullName = dllName;
-    String shortName = fullName.GetFileName();
-#endif
+    StringANSI fullName = dllName;
+    StringANSI shortName = fullName.GetFileName();
+
     Dll* dll = Find( shortName );
     if( dll ) {
       dll->Acquire();
       return dll;
     }
 
-    void* module = ::LoadLibraryEx( fullName, nullptr,
+    void* module = ::LoadLibraryExA( fullName, nullptr,
       asResource ? LOAD_LIBRARY_AS_IMAGE_RESOURCE : 0 );
 
     if( !module )
@@ -154,21 +149,17 @@ namespace Union {
 
 
   inline Dll* Dll::Load( const wchar_t* dllName, bool asResource ) {
-#ifdef UNICODE
-    String fullName = dllName;
-    String shortName = fullName.GetFileName();
-#else
-    String fullName;
+    StringANSI fullName;
     StringConverter::UTF16ToANSI( dllName, fullName );
-    String shortName = fullName.GetFileName();
-#endif
+    StringANSI shortName = fullName.GetFileName();
+
     Dll* dll = Find( shortName );
     if( dll ) {
       dll->Acquire();
       return dll;
     }
 
-    void* module = ::LoadLibraryEx( fullName, nullptr,
+    void* module = ::LoadLibraryExA( fullName, nullptr,
       asResource ? LOAD_LIBRARY_AS_IMAGE_RESOURCE : 0 );
 
     if( !module )
@@ -181,9 +172,9 @@ namespace Union {
   }
 
 
-  inline Dll* Dll::Find( const String& name ) {
+  inline Dll* Dll::Find( const StringANSI& name ) {
     auto& libraries = GetDllList();
-    String shortName = name.GetFileName();
+    StringANSI shortName = name.GetFileName();
     for( auto&& it : libraries )
       if( it->Name == shortName )
         return it;

@@ -105,6 +105,7 @@ namespace Union {
     LATVIAN,
     LITHUANIAN,
     CHINESE,
+    LANGUAGE_MAX,
     OTHER = ENGLISH
   };
 
