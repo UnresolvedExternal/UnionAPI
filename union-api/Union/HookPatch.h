@@ -181,6 +181,9 @@ namespace Union {
 
 
   inline bool HookProviderPatch::Enable( void* from, void* to ) {
+    if( !CanHookThisSpace() )
+      return false;
+
     if( from == nullptr || to == nullptr )
       return false;
 

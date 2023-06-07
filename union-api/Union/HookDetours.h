@@ -95,6 +95,9 @@ namespace Union {
 
 
   inline bool HookProviderDetours::Enable( void* from, void* to ) {
+    if( !CanHookThisSpace() )
+      return false;
+
     if( from == nullptr || to == nullptr )
       return false;
 

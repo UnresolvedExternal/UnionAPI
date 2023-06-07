@@ -138,7 +138,7 @@ namespace Union {
       byte PopRegisters[6*8];
       byte PopF;
       byte OriginalCode[15];
-      byte JumpToBack[6];
+      byte JumpBack[6];
       ulong Protection;
       operator byte* () { return (byte*)this; }
     } Opcode;
@@ -226,7 +226,7 @@ namespace Union {
     x86_set_pack_registers( Opcode.PushRegisters, &Registers.eax );
     x86_set_unpack_registers( Opcode.PopRegisters,  &Registers.eax );
     x86_set_jump( Opcode.JumpToFirstNode, Opcode.JumpToFirstNode );
-    x86_set_jump( Opcode.JumpToBack, Opcode.JumpToBack );
+    x86_set_jump( Opcode.JumpBack, Opcode.JumpBack );
     Opcode.Protection = PAGE_EXECUTE_READWRITE;
     VirtualProtect( &Opcode, sizeof( Opcode ), Opcode.Protection, &Opcode.Protection );
   }
@@ -254,7 +254,7 @@ namespace Union {
     VirtualProtect( whereFrom, SavedCodeLength, protection, &protection );
     x86_set_jump( (byte*)whereFrom, Opcode );
     VirtualProtect( whereFrom, SavedCodeLength, protection, &protection );
-    x86_set_jump_dword_ptr( Opcode.JumpToBack, (DWORD)&Registers.eip);
+    x86_set_jump_dword_ptr( Opcode.JumpBack, (DWORD)&Registers.eip);
     Registers.eip = (DWORD)farEnd;
     ReturnAddress = farEnd;
     x86_set_mov_dword_to_ptr( Opcode.UpdateEIP, &Registers.eip, Registers.eip );
@@ -329,6 +329,9 @@ namespace Union {
 
 
   inline bool HookProviderPartial::Enable( void* baseAddress, void* function ) {
+    if( !CanHookThisSpace() )
+      return false;
+
     if( !baseAddress || !function )
       return false;
 

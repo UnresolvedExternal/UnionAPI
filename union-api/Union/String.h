@@ -6,7 +6,6 @@
 #include "StringFunctions.h"
 #include "Stream.h"
 #include "Array.h"
-// #include "Locale.h"
 #include <regex>
 #include <type_traits>
 #include <io.h>

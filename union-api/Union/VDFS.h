@@ -28,12 +28,12 @@
 #define ZIPPED_VOLUME_FLAG 160
 
 namespace Union {
-  /* 
+  /**
    * Compact virtual file system class
    */
   class UNION_API VDFS {
   public:
-    /*
+    /**
      * The last error from the vdfs methods
      */
     StringANSI LastError;
@@ -53,56 +53,56 @@ namespace Union {
       StreamFilter* OpenWithFilter( Stream* baseStream ) const;
     public:
       /**
-      * @brief Opens a new stream to read data from this file
-      * @return A new stream reader
-      */
+       * @brief Opens a new stream to read data from this file
+       * @return A new stream reader
+       */
       Stream* Open() const;
       /**
-      * @brief Returns the name of the current file
-      * @return The name of the file
-      */
+       * @brief Returns the name of the current file
+       * @return The name of the file
+       */
       const StringANSI& GetName() const;
       /**
-      * @brief Returns the full name of the current file
-      * @return The full name of the file
-      */
+       * @brief Returns the full name of the current file
+       * @return The full name of the file
+       */
       const StringANSI& GetFullName() const;
       /**
-      * @brief Returns the size of the current file
-      * @return The size of the file
-      */
+       * @brief Returns the size of the current file
+       * @return The size of the file
+       */
       size_t GetSize() const;
       /**
-      * @brief Returns the timestamp of the current file
-      * @return The timestamp of the file
-      */
+       * @brief Returns the timestamp of the current file
+       * @return The timestamp of the file
+       */
       uint GetTimestamp() const;
       /**
-      * @brief Increases the count of the references for this file
-      * @return A new count of references
-      */
+       * @brief Increases the count of the references for this file
+       * @return A new count of references
+       */
       int Acquire();
       /**
-      * @brief Reduces the count of the references for this file
-      * @return A new count of references. If value is Zero, object was deleted
-      */
+       * @brief Reduces the count of the references for this file
+       * @return A new count of references. If value is Zero, object was deleted
+       */
       int Release();
       /**
-      * @brief Sortion function for the files using the full names
-      * @param l The left file
-      * @param r The right file
-      * @return A dirrefence between two files
-      */
+       * @brief Sortion function for the files using the full names
+       * @param l The left file
+       * @param r The right file
+       * @return A dirrefence between two files
+       */
       static int Sortion_ByFullName( File* const& l, File* const& r );
-      static int Sortion_ByFullNameS( File* const& l, StringANSI const& r );
+      static int Sortion_ByFullNameStringed( File* const& l, StringANSI const& r );
       /**
-      * @brief Sortion function for the files using the short names
-      * @param l The left file
-      * @param r The right file
-      * @return A dirrefence between two files
-      */
+       * @brief Sortion function for the files using the short names
+       * @param l The left file
+       * @param r The right file
+       * @return A dirrefence between two files
+       */
       static int Sortion_ByName( File* const& l, File* const& r );
-      static int Sortion_ByNameS( File* const& l, StringANSI const& r );
+      static int Sortion_ByNameStringed( File* const& l, StringANSI const& r );
     };
 
     class Volume {
@@ -118,36 +118,36 @@ namespace Union {
       bool ReadNextEntry( const StringANSI& dir );
     public:
       /**
-      * @brief Opens this volume from the file
-      * @param fullName Full path to the volume file
-      * @param tryExclusive Tries to open this file as exclusive (to write data for example)
-      * @return True if file was opened, False if not
-      */
+       * @brief Opens this volume from the file
+       * @param fullName Full path to the volume file
+       * @param tryExclusive Tries to open this file as exclusive (to write data for example)
+       * @return True if file was opened, False if not
+       */
       bool Open( const StringANSI& fullName, bool tryExclusive = false );
       /**
-      * @brief Closes this volume stream
-      * @return True if file was closed, False if not
-      */
+       * @brief Closes this volume stream
+       * @return True if file was closed, False if not
+       */
       bool Close();
       /**
-      * @brief Returns list of the files from this volume
-      * @return The array with files
-      */
+       * @brief Returns list of the files from this volume
+       * @return The array with files
+       */
       const Array<const File*>& GetFileList() const;
       /**
-      * @brief Returns the name of this volume
-      * @return The string name
-      */
+       * @brief Returns the name of this volume
+       * @return The string name
+       */
       const StringANSI& GetName() const;
       /**
-      * @brief Returns the full name of this volume
-      * @return The string name
-      */
+       * @brief Returns the full name of this volume
+       * @return The string name
+       */
       const StringANSI& GetFullName() const;
       /**
-      * @brief Returns the raw timestamp of this volume
-      * @return The raw timestamp
-      */
+       * @brief Returns the raw timestamp of this volume
+       * @return The raw timestamp
+       */
       const uint GetTimestamp() const;
     };
 
@@ -166,57 +166,57 @@ namespace Union {
 
   public:
     /**
-    * @brief Loads a new volume or returns existing one
-    * @param name Local or full name to the volume
-    * @return The pointer to the volume, or null if it is not found
-    */
+     * @brief Loads a new volume or returns existing one
+     * @param name Local or full name to the volume
+     * @return The pointer to the volume, or null if it is not found
+     */
     const Volume* LoadVolume( const StringANSI& name );
     /**
-    * @brief Returns file from the volume
-    * @param name Short (without specified directory) or local (starts from the root directory) name of the file
-    * @param systems In what systems the file can be found: VDF_VIRTUAL, VDF_PHYSICAL, VDF_PHYSICAL_FIRST
-    * @return The pointer to the file, or null if it is not found
-    */
+     * @brief Returns file from the volume
+     * @param name Short (without specified directory) or local (starts from the root directory) name of the file
+     * @param systems In what systems the file can be found: VDF_VIRTUAL, VDF_PHYSICAL, VDF_PHYSICAL_FIRST
+     * @return The pointer to the file, or null if it is not found
+     */
     const File* GetFile( const StringANSI& name, IN OUT int& systems ) const;
     /**
-    * @brief Returns file list from all systems
-    * @param name Short (without specified directory) or local (starts from the root directory) name of the file
-    * @param systems In what systems the file can be found: VDF_VIRTUAL, VDF_PHYSICAL, VDF_PHYSICAL_FIRST
-    * @return The list of pointer to the found files
-    */
+     * @brief Returns an file list from any volumes and physical directories
+     * @param name Short (without specified directory) or local (starts from the root directory) name of the file
+     * @param systems In what systems the file can be found: VDF_VIRTUAL, VDF_PHYSICAL, VDF_PHYSICAL_FIRST
+     * @return The list of pointer to the found files
+     */
     Array<const File*> GetFileVariants( const StringANSI& name, IN int systems ) const;
     /**
-    * @brief Returns file list from the vdf volumes
-    * @return The array with files 
-    */
+     * @brief Returns file list from the vdf volumes
+     * @return The array with files 
+     */
     const Array<const File*>& GetVirtualFileList() const;
     /**
-    * @brief Returns file list from the game directory
-    * @return The array with files
-    */
+     * @brief Returns file list from the game directory
+     * @return The array with files
+     */
     const Array<const File*>& GetPhysicalFileList() const;
     /**
-    * @brief Returns a loaded volume list
-    * @return The array with volumes
-    */
+     * @brief Returns a loaded volume list
+     * @return The array with volumes
+     */
     const Array<const Volume*>& GetVolumes() const;
     /**
-    * @brief Loads files from specified firectory
-    */
+     * @brief Loads files from specified firectory
+     */
     void PostLoadDirectoryFiles( const StringANSI& directory );
     /**
-    * @brief Loads VDF volumes from specified firectory
-    */
+     * @brief Loads VDF volumes from specified firectory
+     */
     void PostLoadDirectoryVDF( const StringANSI& directory );
     /**
-    * @brief Returns the common file system
-    * @return The pointer to the system
-    */
+     * @brief Returns the common file system
+     * @return The pointer to the system
+     */
     static VDFS& GetDefaultInstance();
   };
 
 
-  /*
+  /**
    * Represents the shell of a VDFS file
    */
   class UNION_API VirtualFile {
@@ -225,69 +225,69 @@ namespace Union {
     int System;
   public:
     /**
-    * @brief Creates a new virtual file
-    * @param handle Full (relative to the root directory) or short name of the file
-    * @param systems In what systems the file can be found: VDF_VIRTUAL, VDF_PHYSICAL, VDF_PHYSICAL_FIRST
-    */
+     * @brief Creates a new virtual file
+     * @param handle Full (relative to the root directory) or short name of the file
+     * @param systems In what systems the file can be found: VDF_VIRTUAL, VDF_PHYSICAL, VDF_PHYSICAL_FIRST
+     */
     VirtualFile( const char* name, int systems = VDF_VIRTUAL | VDF_PHYSICAL );
     /**
-    * @brief Returns name of the file
-    * @return Name of the file
-    */
+     * @brief Returns name of the file
+     * @return Name of the file
+     */
     const char* GetName() const;
     /**
-    * @brief Returns the existence of the file
-    * @return True - exists, False - inexists
-    */
+     * @brief Returns the existence of the file
+     * @return True - exists, False - inexists
+     */
     bool IsExists() const;
     /**
-    * @brief Returns the file size
-    * @return The file size
-    */
+     * @brief Returns the file size
+     * @return The file size
+     */
     int GetSize() const;
     /**
-    * @brief Reads content from the file
-    * @param where Memory to which data will be copied
-    * @param length Count in bytes to read
-    * @return Cout of readed bytes. This calue can be less than 'length'
-    */
+     * @brief Reads content from the file
+     * @param where Memory to which data will be copied
+     * @param length Count in bytes to read
+     * @return Cout of readed bytes. This calue can be less than 'length'
+     */
     int Read( void* where, int length );
     /**
-    * @brief Reads all bytes from the file
-    * @param where Memory to which data will be copied
-    * @return Cout of readed bytes
-    */
+     * @brief Reads all bytes from the file
+     * @param where Memory to which data will be copied
+     * @return Cout of readed bytes
+     */
     int ReadToEnd( void* where );
     /**
-    * @brief Returns the caret position
-    * @return Caret position
-    */
+     * @brief Returns the caret position
+     * @return Caret position
+     */
     int GetPosition() const;
     /**
-    * @brief Changes the caret in the file (position where is the reading comes from)
-    * @param position New caret position
-    * @param origin Origin to change: SEEK_SET, SEEK_CUR, SEEK_END
-    * @return Nothing to return
-    */
+     * @brief Changes the caret in the file (position where is the reading comes from)
+     * @param position New caret position
+     * @param origin Origin to change: SEEK_SET, SEEK_CUR, SEEK_END
+     * @return Nothing to return
+     */
     void SetPosition( int position, int origin = SEEK_SET );
     /**
-    * @brief Returns the system containing the file
-    * @return VDF_VIRTUAL, VDF_PHYSICAL or Zero (file inexists)
-    */
+     * @brief Returns the system containing the file
+     * @return VDF_VIRTUAL, VDF_PHYSICAL or Zero (file inexists)
+     */
     int GetSysetm() const;
     /**
-    * @brief Returns the file handle
-    * @return Valid handle or (-1) (file inexists)
-    */
+     * @brief Returns the file handle
+     * @return Valid handle or (-1) (file inexists)
+     */
     int GetHandle() const;
     /**
-    * @brief Closes the file
-    * @return Nothing to return
-    */
+     * @brief Closes the file
+     * @return Nothing to return
+     */
     void Close();
     /**
-    * @brief Closes the file and destructs this object
-    */
+     * @brief Closes the file and destructs this object
+     */
     ~VirtualFile();
   };
 
@@ -295,11 +295,11 @@ namespace Union {
 #if !defined(_UNION_API_DLL) || defined(_UNION_API_BUILD)
 #pragma region vdfs_api
   /**
-  * @brief Opens a virtual file to read
-  * @param file_name Full (relative to the root directory) or short name of the file
-  * @param systems In what systems the file can be found: VDF_VIRTUAL, VDF_PHYSICAL, VDF_PHYSICAL_FIRST
-  * @return Opened file handle or (-1) for error
-  */
+   * @brief Opens a virtual file to read
+   * @param file_name Full (relative to the root directory) or short name of the file
+   * @param systems In what systems the file can be found: VDF_VIRTUAL, VDF_PHYSICAL, VDF_PHYSICAL_FIRST
+   * @return Opened file handle or (-1) for error
+   */
   static int vdf_fopen( const char* file_name, int systems ) {
     StringANSI fileName = StringANSI( file_name ).MakeUpper().TrimLeft( "\\" );
     const VDFS::File* file = VDFS::GetDefaultInstance().GetFile( fileName, systems );
@@ -313,10 +313,10 @@ namespace Union {
     return reinterpret_cast<int&>(stream);
   }
   /**
-  * @brief Closes an opened file handle
-  * @param handle Handle of the opened file
-  * @return Non-zero if successful. Zero if stream handle is invalid.
-  */
+   * @brief Closes an opened file handle
+   * @param handle Handle of the opened file
+   * @return Non-zero if successful. Zero if stream handle is invalid.
+   */
   static int vdf_fclose( int handle ) {
     if( handle == -1 ) {
       VDFS::GetDefaultInstance().LastError =
@@ -329,12 +329,12 @@ namespace Union {
     return 1;
   }
   /**
-  * @brief Reads content from the opened file
-  * @param handle Handle of the opened file
-  * @param buffer Memory to which data will be copied
-  * @param length Count in bytes to read
-  * @return Cout of readed bytes. This calue can be less than 'length'
-  */
+   * @brief Reads content from the opened file
+   * @param handle Handle of the opened file
+   * @param buffer Memory to which data will be copied
+   * @param length Count in bytes to read
+   * @return Cout of readed bytes. This calue can be less than 'length'
+   */
   static int vdf_fread( int handle, void* buffer, int length ) {
     if( handle == -1 ) {
       VDFS::GetDefaultInstance().LastError =
@@ -346,11 +346,11 @@ namespace Union {
     return stream->Read( buffer, length );
   }
   /**
-  * @brief Changes the caret in the file (position where is the reading comes from)
-  * @param handle Handle of the opened file
-  * @param position New caret position
-  * @return Non-zero if successful. Zero if stream handle is invalid.
-  */
+   * @brief Changes the caret in the file (position where is the reading comes from)
+   * @param handle Handle of the opened file
+   * @param position New caret position
+   * @return Non-zero if successful. Zero if stream handle is invalid.
+   */
   static int vdf_fseek( int handle, int position ) {
     if( handle == -1 ) {
       VDFS::GetDefaultInstance().LastError =
@@ -363,10 +363,10 @@ namespace Union {
     return 1;
   }
   /**
-  * @brief Returns the caret position
-  * @param handle Handle of the opened file
-  * @return Caret position
-  */
+   * @brief Returns the caret position
+   * @param handle Handle of the opened file
+   * @return Caret position
+   */
   static int vdf_ftell( int handle ) {
     if( handle == -1 ) {
       VDFS::GetDefaultInstance().LastError =
@@ -378,11 +378,11 @@ namespace Union {
     return stream->GetPosition();
   }
   /**
-  * @brief Returns the systems where the file was found
-  * @param file_name Full (relative to the root directory) or short name of the file
-  * @param systems In what systems the file can be found: VDF_VIRTUAL, VDF_PHYSICAL, VDF_PHYSICAL_FIRST
-  * @return VDF_VIRTUAL, VDF_PHYSICAL or Zero (not found)
-  */
+   * @brief Returns the systems where the file was found
+   * @param file_name Full (relative to the root directory) or short name of the file
+   * @param systems In what systems the file can be found: VDF_VIRTUAL, VDF_PHYSICAL, VDF_PHYSICAL_FIRST
+   * @return VDF_VIRTUAL, VDF_PHYSICAL or Zero (not found)
+   */
   static int vdf_fexists( const char* file_name, int systems ) {
     StringANSI fileName = StringANSI( file_name ).MakeUpper().TrimLeft( "\\" );
     VDFS::GetDefaultInstance().GetFile( fileName, systems );
@@ -393,11 +393,11 @@ namespace Union {
     return systems;
   }
   /**
-  * @brief Returns the found list of full names
-  * @param file_name Short name of the file to be found
-  * @param full_file_names Buffer to be copied full file names (sepparated by '|')
-  * @return Found files count
-  */
+   * @brief Returns the found list of full names
+   * @param file_name Short name of the file to be found
+   * @param full_file_names Buffer to be copied full file names (sepparated by '|')
+   * @return Found files count
+   */
   static int vdf_searchfile( const char* file_name, OUT char* full_file_names ) {
     StringANSI fileName = StringANSI( file_name ).MakeUpper().TrimLeft( "\\" );
     int systems = VDF_VIRTUAL | VDF_PHYSICAL;
@@ -413,10 +413,10 @@ namespace Union {
     return 1;
   }
   /**
-  * @brief Returns the file size
-  * @param handle Handle of the opened file
-  * @return The file size
-  */
+   * @brief Returns the file size
+   * @param handle Handle of the opened file
+   * @return The file size
+   */
   static int vdf_ffilesize( int handle ) {
     if( handle == -1 ) {
       VDFS::GetDefaultInstance().LastError =
@@ -428,10 +428,10 @@ namespace Union {
     return stream->GetSize();
   }
   /**
-  * @brief Returns the last internal error of the VDFS
-  * @param handle Buffer to be copied the error text
-  * @return Text length
-  */
+   * @brief Returns the last internal error of the VDFS
+   * @param handle Buffer to be copied the error text
+   * @return Text length
+   */
   static int vdf_getlasterror( OUT char* error ) {
     StringANSI& lastError = VDFS::GetDefaultInstance().LastError;
     strcpy_s( error, lastError.GetLength() + 1, lastError );
@@ -516,7 +516,7 @@ namespace Union {
   }
 
 
-  inline int VDFS::File::Sortion_ByFullNameS( File* const& l, StringANSI const& r ) {
+  inline int VDFS::File::Sortion_ByFullNameStringed( File* const& l, StringANSI const& r ) {
     return l->FullNameVirtual.GetDifference( r );
   }
 
@@ -526,7 +526,7 @@ namespace Union {
   }
 
 
-  inline int VDFS::File::Sortion_ByNameS( File* const& l, StringANSI const& r ) {
+  inline int VDFS::File::Sortion_ByNameStringed( File* const& l, StringANSI const& r ) {
     return l->Name.GetDifference( r );
   }
 #pragma endregion
@@ -699,7 +699,7 @@ namespace Union {
       uint index = Physical.Files_ByFullName.IndexOf<File::Sortion_ByFullName>( &tmpFile );
       if( index != -1 ) {
         system = VDF_PHYSICAL;
-        Physical.Files_ByFullName[index]->Acquire();
+        // Physical.Files_ByFullName[index]->Acquire();
         return Physical.Files_ByFullName[index];
       }
     }
@@ -708,7 +708,7 @@ namespace Union {
       uint index = Virtual.Files_ByFullName.IndexOf<File::Sortion_ByFullName>( &tmpFile );
       if( index != -1 ) {
         system = VDF_VIRTUAL;
-        Virtual.Files_ByFullName[index]->Acquire();
+        // Virtual.Files_ByFullName[index]->Acquire();
         return Virtual.Files_ByFullName[index];
       }
     }
@@ -717,7 +717,7 @@ namespace Union {
       uint index = Physical.Files_ByFullName.IndexOf<File::Sortion_ByFullName>( &tmpFile );
       if( index != -1 ) {
         system = VDF_PHYSICAL;
-        Physical.Files_ByFullName[index]->Acquire();
+        // Physical.Files_ByFullName[index]->Acquire();
         return Physical.Files_ByFullName[index];
       }
     }
@@ -740,7 +740,7 @@ namespace Union {
       uint index = Physical.Files_ByName.IndexOf<File::Sortion_ByName>( &tmpFile );
       if( index != -1 ) {
         system = VDF_PHYSICAL;
-        Physical.Files_ByName[index]->Acquire();
+        // Physical.Files_ByName[index]->Acquire();
         return Physical.Files_ByName[index];
       }
     }
@@ -749,7 +749,7 @@ namespace Union {
       uint index = Virtual.Files_ByName.IndexOf<File::Sortion_ByName>( &tmpFile );
       if( index != -1 ) {
         system = VDF_VIRTUAL;
-        Virtual.Files_ByName[index]->Acquire();
+        // Virtual.Files_ByName[index]->Acquire();
         return Virtual.Files_ByName[index];
       }
     }
@@ -758,7 +758,7 @@ namespace Union {
       uint index = Physical.Files_ByName.IndexOf<File::Sortion_ByName>( &tmpFile );
       if( index != -1 ) {
         system = VDF_PHYSICAL;
-        Physical.Files_ByName[index]->Acquire();
+        // Physical.Files_ByName[index]->Acquire();
         return Physical.Files_ByName[index];
       }
     }
@@ -772,7 +772,7 @@ namespace Union {
     Array<const VDFS::File*> fileList;
 
     if( systems & VDF_PHYSICAL ) {
-      uint index = Physical.Files_ByFullName.IndexOf<File::Sortion_ByFullNameS>( name );
+      uint index = Physical.Files_ByFullName.IndexOf<File::Sortion_ByFullNameStringed>( name );
       if( index != -1 ) {
         auto file = Physical.Files_ByFullName[index];
         fileList.Insert( file );
@@ -781,7 +781,7 @@ namespace Union {
 
     if( systems & VDF_VIRTUAL ) {
       for( auto&& v : Volumes ) {
-        uint index = v->Files_ByFullName.IndexOf<File::Sortion_ByFullNameS>( name );
+        uint index = v->Files_ByFullName.IndexOf<File::Sortion_ByFullNameStringed>( name );
         if( index != -1 ) {
           auto file = v->Files_ByFullName[index];
           fileList.Insert( file );
@@ -799,7 +799,7 @@ namespace Union {
 
     Array<const VDFS::File*> fileList;
     if( systems & VDF_PHYSICAL ) {
-      uint index = Physical.Files_ByName.IndexOf<File::Sortion_ByNameS>( name );
+      uint index = Physical.Files_ByName.IndexOf<File::Sortion_ByNameStringed>( name );
       if( index != -1 ) {
         auto file = Physical.Files_ByName[index];
         fileList.Insert( file );
@@ -808,7 +808,7 @@ namespace Union {
 
     if( systems & VDF_VIRTUAL ) {
       for( auto&& v : Volumes ) {
-        uint index = v->Files_ByName.IndexOf<File::Sortion_ByNameS>( name );
+        uint index = v->Files_ByName.IndexOf<File::Sortion_ByNameStringed>( name );
         if( index != -1 ) {
           auto file = v->Files_ByName[index];
           fileList.Insert( file );

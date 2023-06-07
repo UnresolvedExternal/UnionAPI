@@ -25,7 +25,22 @@ namespace Union {
   };
 
 
+  class HookSpace {
+    HookSpace();
+  public:
+    bool(*Condition)();
+    HookSpace( bool(*condition)() );
+    bool IsActive();
+    static HookSpace& GetCurrentInstance();
+  };
+
+
+#define HOOKSPACE(name, lambda) static Union::HookSpace HookSpace_##name( []() -> bool { return (lambda); } )
+
+
   class UNION_API HookProvider {
+  protected:
+    static bool CanHookThisSpace();
   public:
     virtual bool IsEnabled() = 0;
     virtual bool Enable( void* originPtr, void* destPtr ) = 0;
@@ -47,6 +62,34 @@ namespace Union {
     bool Disable();
     operator Signature();
   };
+
+
+  inline HookSpace::HookSpace() {
+    Condition = nullptr;
+  }
+
+
+  inline HookSpace::HookSpace( bool(*condition)() ) {
+    Condition = condition;
+    GetCurrentInstance().Condition = condition;
+  }
+
+
+  inline bool HookSpace::IsActive() {
+    return Condition ? Condition() : true;
+  }
+
+
+  inline HookSpace& HookSpace::GetCurrentInstance() {
+    static HookSpace* instance =
+      (HookSpace*)CreateSharedSingleton( "HookSpace", []() -> void* { return new HookSpace(); } );
+    return *instance;
+  }
+
+
+  inline bool HookProvider::CanHookThisSpace() {
+    return HookSpace::GetCurrentInstance().IsActive();
+  }
 
 
   template<typename Signature>
