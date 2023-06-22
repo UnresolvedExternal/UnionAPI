@@ -78,6 +78,11 @@ namespace Union {
        */
       uint GetTimestamp() const;
       /**
+       * @brief Returns system where the file is placed: VDF_VIRTUAL or VDF_PHYSICAL
+       * @return A system where the file is placed: VDF_VIRTUAL or VDF_PHYSICAL
+       */
+      int GetSystem() const;
+      /**
        * @brief Increases the count of the references for this file
        * @return A new count of references
        */
@@ -446,7 +451,7 @@ namespace Union {
     Zipped = false;
     Position = 0;
     Size = 0;
-    Timestamp = 0;
+    Timestamp = 0xFFFFFFFF;
     ReferenceCount = 1;
   }
 
@@ -458,7 +463,7 @@ namespace Union {
     if( Zipped )
       return new StreamFilterZIP( baseStream, Position, Size );
 
-    return new StreamFilterCached( baseStream );
+    return new StreamFilterCached( baseStream, Position, Size );
   }
 
 
@@ -466,12 +471,11 @@ namespace Union {
     if( BaseStream ) {
       Stream* copiedStream = BaseStream->OpenCopy();
       StreamFilter* filter = OpenWithFilter( copiedStream );
-      filter->SetStartPosition( Position );
-      filter->SetSize( Size );
       return filter;
     }
     else {
       FileReader* reader = new FileReader( FullName );
+      const_cast<uint&>( Size ) = reader->GetSize(); // Emergency update the file size
       return OpenWithFilter( reader );
     }
   }
@@ -494,6 +498,11 @@ namespace Union {
 
   inline uint VDFS::File::GetTimestamp() const {
     return Timestamp;
+  }
+
+
+  inline int VDFS::File::GetSystem() const {
+    return BaseStream ? VDF_VIRTUAL : VDF_PHYSICAL;
   }
 
 

@@ -25,8 +25,10 @@ namespace Union {
     StreamFilter( Stream* baseStream );
     virtual void SetPosition( size_t position, int origin = SEEK_SET );
     virtual size_t GetPosition() const;
+    virtual int GetSize() const;
     virtual void SetStartPosition( size_t position );
     virtual void SetSize( size_t size );
+    virtual Stream* const GetBaseStream() const;
   };
 
   class UNION_API StreamFilterCached : public StreamFilter {
@@ -37,8 +39,8 @@ namespace Union {
     size_t ReadFromCache( void* where, size_t length );
   public:
     StreamFilterCached( Stream* baseStream );
+    StreamFilterCached( Stream* baseStream, size_t position, size_t size );
     virtual bool IsOpened() const;
-    virtual int GetSize() const;
     virtual size_t Read( void* where, size_t length );
     virtual size_t Write( void* where, size_t length );
     virtual void SetPosition( size_t position, int origin = SEEK_SET );
@@ -47,8 +49,6 @@ namespace Union {
     virtual void Close();
     virtual Stream* OpenCopy();
     virtual HANDLE GetHandle();
-    virtual void SetStartPosition( size_t position );
-    virtual void SetSize( size_t size );
     virtual ~StreamFilterCached();
   };
 
@@ -56,6 +56,7 @@ namespace Union {
   class UNION_API Decompressor {
     friend struct Block;
     struct Block {
+      Decompressor* Decompressor;
       byte* InputData;
       ulong InputDataLength;
       byte* OutputData;
@@ -76,15 +77,18 @@ namespace Union {
     Semaphore Semaphore;
     Block Blocks[32];
     int CurrentBlock;
+    Event ThreadAvailabilityState;
 
     Decompressor();
     ulong GetProcessorsCount();
 
   public:
+    bool MultithreadingIsAvailable();
     bool IsBusy();
     void WaitForEnd();
     void Decompress( void* input, size_t inputLength, void* output, size_t outputLength, bool destroyInput = false );
     static Decompressor& GetInstance();
+    static void ThreadAvailabilityNotifier( Event& event );
   };
 
 
@@ -108,8 +112,6 @@ namespace Union {
     virtual void Close();
     virtual Stream* OpenCopy();
     virtual HANDLE GetHandle();
-    virtual void SetStartPosition( size_t position );
-    virtual void SetSize( size_t size );
     virtual ~StreamFilterZIP();
   };
 
@@ -183,6 +185,10 @@ namespace Union {
     BaseStream = baseStream;
     StartPosition = 0;
     Size = baseStream ? baseStream->GetSize() : 0;
+
+    auto baseFilter = dynamic_cast<StreamFilter*>(baseStream);
+    if( baseFilter )
+      StartPosition = baseFilter->StartPosition;
   }
 
 
@@ -193,7 +199,12 @@ namespace Union {
 
 
   inline void StreamFilter::SetSize( size_t size ) {
-    Size = size;
+    StreamFilter::Size = size;
+  }
+
+
+  inline Stream* const StreamFilter::GetBaseStream() const {
+    return BaseStream;
   }
 
 
@@ -210,6 +221,11 @@ namespace Union {
   inline size_t StreamFilter::GetPosition() const {
     return BaseStream->GetPosition() - StartPosition;
   }
+
+
+  inline int StreamFilter::GetSize() const {
+    return StreamFilter::Size;
+  }
 #pragma endregion
 
 
@@ -220,13 +236,15 @@ namespace Union {
   }
 
 
-  inline bool StreamFilterCached::IsOpened() const {
-    return BaseStream->IsOpened();
+  inline StreamFilterCached::StreamFilterCached( Stream* baseStream, size_t position, size_t size ) : StreamFilter( baseStream ) {
+    CachePosition = -1;
+    SetStartPosition( position );
+    SetSize( size );
   }
 
 
-  inline int StreamFilterCached::GetSize() const {
-    return StreamFilter::Size;
+  inline bool StreamFilterCached::IsOpened() const {
+    return BaseStream->IsOpened();
   }
 
 
@@ -309,14 +327,6 @@ namespace Union {
 
   inline HANDLE StreamFilterCached::GetHandle() {
     return BaseStream->GetHandle();
-  }
-
-
-  inline void StreamFilterCached::SetStartPosition( size_t position ) {
-  }
-
-
-  inline void StreamFilterCached::SetSize( size_t size ) {
   }
 
 
@@ -467,17 +477,20 @@ namespace Union {
     OutputDataLength = outputLength;
     DestroyInput = destroyInput;
     Switch.On();
-    // Decompress();
   }
 
 
-  inline Decompressor::Decompressor() : Semaphore( GetProcessorsCount() ) {
+  inline Decompressor::Decompressor() : Semaphore( GetProcessorsCount() ), ThreadAvailabilityState( false ) {
     CurrentBlock = 0;
     for( int i = 0; i < 30; i++ ) {
       Block& block = Blocks[i];
+      block.Decompressor = this;
       block.Semaphore = &Semaphore;
       block.Thread.Start( &block );
     }
+
+    Thread notifierThread( &ThreadAvailabilityNotifier );
+    notifierThread.Start( &ThreadAvailabilityState );
   }
 
 
@@ -506,6 +519,11 @@ namespace Union {
   }
 
 
+  inline bool Decompressor::MultithreadingIsAvailable() {
+    return ThreadAvailabilityState.IsOpen();
+  }
+
+
   inline bool Decompressor::IsBusy() {
     for( int i = 0; i < 30; i++ )
       if( Blocks[i].IsBusy() )
@@ -522,6 +540,13 @@ namespace Union {
 
 
   inline void Decompressor::Decompress( void* input, size_t inputLength, void* output, size_t outputLength, bool destroyInput ) {
+    if( !MultithreadingIsAvailable() ) {
+      uncompress( (Bytef*)output, (uLongf*)&outputLength, (Bytef*)input, (uLongf)inputLength);
+      if( destroyInput )
+        delete[] input;
+      return;
+    }
+
     Block& block = Blocks[CurrentBlock];
     if( ++CurrentBlock > 30 )
       CurrentBlock = 0;
@@ -535,6 +560,11 @@ namespace Union {
     static Decompressor* instance =
       (Decompressor*)CreateSharedSingleton( "Decompressor", []() -> void* { return new Decompressor(); } );
     return *instance;
+  }
+
+
+  inline void Decompressor::ThreadAvailabilityNotifier( Event& event ) {
+    event.Open();
   }
 #pragma endregion
 
@@ -636,16 +666,6 @@ namespace Union {
 
   inline HANDLE StreamFilterZIP::GetHandle() {
     return BaseStream->GetHandle();
-  }
-
-
-  inline void StreamFilterZIP::SetStartPosition( size_t position ) {
-    StreamFilter::SetStartPosition( position );
-  }
-
-
-  inline void StreamFilterZIP::SetSize( size_t size ) {
-    StreamFilter::SetSize( size );
   }
 
 

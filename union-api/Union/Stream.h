@@ -106,6 +106,7 @@ namespace Union {
 #if !defined(_UNION_API_DLL) || defined(_UNION_API_BUILD)
 #pragma region file_reader
   inline FileReader::FileReader( const char* fileName, bool exclusive ) {
+    Exclusize = exclusive;
     size_t fileNameLen = strlen( fileName );
     FileName = new char[fileNameLen + 1];
     strcpy_s( FileName, fileNameLen + 1, fileName );
@@ -124,6 +125,7 @@ namespace Union {
 
 
   inline FileReader::FileReader( const wchar* fileName, bool exclusive ) {
+    Exclusize = exclusive;
     size_t fileNameLen = lstrlenW( fileName );
     FileNameUnicode = new wchar[fileNameLen + 1];
     lstrcpyW( FileNameUnicode, fileName );
