@@ -208,7 +208,6 @@ namespace Union {
   }
 
 
-
   inline void StreamFilter::SetPosition( size_t position, int origin ) {
     switch( origin ) {
       case SEEK_SET: return BaseStream->SetPosition( StartPosition + position, SEEK_SET );
@@ -230,7 +229,6 @@ namespace Union {
 
 
 #pragma region stream_filter_cached
-#if 1
   inline StreamFilterCached::StreamFilterCached( Stream* baseStream ) : StreamFilter( baseStream ) {
     CachePosition = -1;
   }
@@ -248,7 +246,7 @@ namespace Union {
   }
 
 
-  void StreamFilterCached::UpdateCache() {
+  inline void StreamFilterCached::UpdateCache() {
     size_t savedPosition = BaseStream->GetPosition();
     CacheSize = std::min( Size - GetPosition(), sizeof( Cache ) );
     BaseStream->Read( Cache, CacheSize );
@@ -257,7 +255,7 @@ namespace Union {
   }
 
 
-  size_t StreamFilterCached::ReadFromCache( void* where, size_t length ) {
+  inline size_t StreamFilterCached::ReadFromCache( void* where, size_t length ) {
     if( CachePosition >= sizeof( Cache ) )
       UpdateCache();
 
@@ -333,125 +331,6 @@ namespace Union {
   inline StreamFilterCached::~StreamFilterCached() {
     Close();
   }
-#else
-  inline StreamFilterCached::StreamFilterCached( Stream* baseStream ) : StreamFilter( baseStream ) {
-    CachePosition = sizeof( Cache );
-  }
-
-
-  inline bool StreamFilterCached::IsOpened() const {
-    return BaseStream && BaseStream->IsOpened();
-  }
-
-
-  inline int StreamFilterCached::GetSize() const {
-    return Size;
-  }
-
-
-  void StreamFilterCached::UpdateCache() {
-    size_t savedPosition = BaseStream->GetPosition();
-    CacheSize = BaseStream->Read( Cache, sizeof( Cache ) );
-    BaseStream->SetPosition( savedPosition );
-    CachePosition = 0;
-  }
-
-
-  size_t StreamFilterCached::ReadFromCache( void* where, size_t length ) {
-    if( length > sizeof( Cache ) )
-      return BaseStream->Read( where, length );
-
-    size_t readedTotal = 0;
-    if( CachePosition + length > sizeof( Cache ) ) {
-      size_t maxToRead = std::min( length, sizeof( Cache ) - CachePosition );
-      if( maxToRead > 0 ) {
-        readedTotal = ReadFromCache( where, maxToRead );
-        (byte*&)where += readedTotal;
-        length -= readedTotal;
-      }
-      UpdateCache();
-    }
-    
-    size_t maxToRead = std::min( CacheSize, length );
-    memcpy( where, Cache + CachePosition, maxToRead );
-    CachePosition += maxToRead;
-    readedTotal += maxToRead;
-    BaseStream->SetPosition( maxToRead, SEEK_CUR );
-    return readedTotal;
-  }
-
-
-  inline size_t StreamFilterCached::Read( void* where, size_t length ) {
-    size_t maxToRead = std::min( length, GetSize() - GetPosition() );
-    if( maxToRead > sizeof( Cache ) ) {
-      CachePosition = sizeof( Cache );
-      return BaseStream->Read( where, maxToRead );
-    }
-
-    return ReadFromCache( where, maxToRead );
-  }
-
-
-  inline size_t StreamFilterCached::Write( void* where, size_t length ) {
-    return BaseStream->Write( where, length );
-  }
-
-
-  inline void StreamFilterCached::SetPosition( size_t position, int origin ) {
-    StreamFilter::SetPosition( position );
-    CachePosition = sizeof( Cache );
-  }
-
-
-  inline size_t StreamFilterCached::GetPosition() const {
-    return StreamFilter::GetPosition();
-  }
-
-
-  inline void StreamFilterCached::Flush() {
-    BaseStream->Flush();
-  }
-
-
-  inline void StreamFilterCached::Close() {
-    if( BaseStream ) {
-      BaseStream->Close();
-      delete BaseStream;
-      BaseStream = nullptr;
-    }
-  }
-
-
-  inline Stream* StreamFilterCached::OpenCopy() {
-    Stream* baseStream = BaseStream->OpenCopy();
-    StreamFilterCached* streamFilter = new StreamFilterCached( baseStream );
-    streamFilter->StartPosition = StartPosition;
-    streamFilter->Size = Size;
-    return streamFilter;
-  }
-
-
-  inline HANDLE StreamFilterCached::GetHandle() {
-    return BaseStream->GetHandle();
-  }
-
-
-  inline void StreamFilterCached::SetStartPosition( size_t position ) {
-    StreamFilter::SetStartPosition( position );
-    CachePosition = sizeof( Cache );
-  }
-
-
-  inline void StreamFilterCached::SetSize( size_t size ) {
-    StreamFilter::SetSize( size );
-    CachePosition = sizeof( Cache );
-  }
-
-
-  inline StreamFilterCached::~StreamFilterCached() {
-    Close();
-  }
-#endif
 #pragma endregion
 
 
@@ -573,6 +452,7 @@ namespace Union {
   inline StreamFilterZIP::StreamFilterZIP( Stream* baseStream ) : StreamFilterZIP( baseStream, 0, 0 ) {
   }
 
+
   inline StreamFilterZIP::StreamFilterZIP( Stream* baseStream, size_t position, size_t size ) : StreamFilter( baseStream ) {
     SetStartPosition( position );
     SetSize( size );
@@ -600,6 +480,7 @@ namespace Union {
     Decompressor::GetInstance().WaitForEnd();
     CachePosition = 0;
   }
+
 
   inline bool StreamFilterZIP::IsOpened() const {
     return BaseStream->IsOpened();

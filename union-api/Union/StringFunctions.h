@@ -13,12 +13,12 @@
 
 namespace Union {
   inline size_t str_get_length( const char* str ) {
-    return std::strlen( str );
+    return str ? std::strlen( str ) : 0;
   }
 
 
   inline size_t str_get_length( const wchar* str ) {
-    return std::wcslen( str );
+    return str ? std::wcslen( str ) : 0;
   }
 
 

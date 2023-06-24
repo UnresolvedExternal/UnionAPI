@@ -637,19 +637,19 @@ namespace Union {
 
 
 
-  const StringANSI& VDFS::Volume::GetName() const {
+  inline const StringANSI& VDFS::Volume::GetName() const {
     return Name;
   }
 
 
 
-  const StringANSI& VDFS::Volume::GetFullName() const {
+  inline const StringANSI& VDFS::Volume::GetFullName() const {
     return FullName;
   }
 
 
 
-  const uint VDFS::Volume::GetTimestamp() const {
+  inline const uint VDFS::Volume::GetTimestamp() const {
     return Timestamp;
   }
 #pragma endregion
@@ -839,7 +839,7 @@ namespace Union {
   }
 
 
-  const Array<const VDFS::Volume*>& VDFS::GetVolumes() const {
+  inline const Array<const VDFS::Volume*>& VDFS::GetVolumes() const {
     return (Array<const VDFS::Volume*>&)Volumes;
   }
 
@@ -902,12 +902,12 @@ namespace Union {
   }
 
 
-  void VDFS::PostLoadDirectoryFiles( const StringANSI& directory ) {
+  inline void VDFS::PostLoadDirectoryFiles( const StringANSI& directory ) {
     LoadDirectoryFiles( directory, "" );
   }
 
 
-  void VDFS::PostLoadDirectoryVDF( const StringANSI& directory ) {
+  inline void VDFS::PostLoadDirectoryVDF( const StringANSI& directory ) {
     LoadDirectoryVDF( directory );
   }
 
