@@ -52,6 +52,8 @@ namespace Union {
     const T& operator [] ( uint i ) const;
     T& Get( uint i );
     const T& Get( uint i ) const;
+    T& GetEnd( uint i );
+    const T& GetEnd( uint i ) const;
     uint Insert( const T& object );
   _Array_SortionFunc_
     uint Insert( const T& object );
@@ -100,6 +102,7 @@ namespace Union {
     const T* begin() const;
     T* end();
     const T* end() const;
+    bool IsLocatedHere( void* memptr );
     ~Array();
   };
 
@@ -221,7 +224,7 @@ namespace Union {
           T* destination = Memory->Data;
     
     while( source < source_end )
-      new(destination++) T( *(source++) );
+      ::new(destination++) T( *(source++) );
   }
 
 
@@ -237,7 +240,7 @@ namespace Union {
           T* destination = Memory->Data;
     
     while( source < source_end )
-      new(destination++) T( *(source++) );
+      ::new(destination++) T( *(source++) );
 
     return *this;
   }
@@ -261,7 +264,7 @@ namespace Union {
     Memory->UsedCount = array.Memory->UsedCount;
     Memory->Allocate();
     for( uint i = 0; i < Memory->UsedCount; i++ )
-      new(&Memory->Data[i]) T( array.Memory->Data[i] );
+      ::new(&Memory->Data[i]) T( array.Memory->Data[i] );
 
     return *this;
   }
@@ -316,11 +319,23 @@ namespace Union {
 
 
   template<class T>
+  T& Array<T>::GetEnd( uint i ) {
+    return Memory->Data[GetCount() - 1 - i];
+  }
+
+
+  template<class T>
+  const T& Array<T>::GetEnd( uint i ) const {
+    return Memory->Data[GetCount() - 1 - i];
+  }
+
+
+  template<class T>
   uint Array<T>::Insert( const T& object ) {
     uint inserted_object_index = Memory->UsedCount;
     Memory->UsedCount++;
     Memory->Allocate();
-    new( &Memory->Data[inserted_object_index] ) T( object );
+    ::new( &Memory->Data[inserted_object_index] ) T( object );
     return inserted_object_index;
   }
 
@@ -341,7 +356,7 @@ namespace Union {
     Memory->UsedCount++;
     Memory->Allocate();
     memmove( &Memory->Data[index + 1], &Memory->Data[index], objects_count_to_rshift * sizeof( T ) );
-    new(&Memory->Data[index]) T( object );
+    ::new(&Memory->Data[index]) T( object );
     return index;
   }
 
@@ -452,7 +467,7 @@ namespace Union {
 
   template <class T>
   uint Array<T>::DeleteAt( uint index, bool fast ) {
-    delete Memory->Data[index];
+    ::delete Memory->Data[index];
 
     if( index < --Memory->UsedCount ) {
       if( !fast ) {
@@ -527,7 +542,7 @@ namespace Union {
   template <class T>
   void Array<T>::DeleteData() {
     for( uint i = 0; i < Memory->UsedCount; i++ )
-      delete Memory->Data[i];
+      ::delete Memory->Data[i];
     Memory->UsedCount = 0;
     Memory->Free();
   }
@@ -669,6 +684,12 @@ namespace Union {
   template <class T>
   const T* Array<T>::end() const {
     return Memory->Data + Memory->UsedCount;
+  }
+
+
+  template <class T>
+  bool Array<T>::IsLocatedHere( void* memptr ) {
+    return (T*)memptr >= Memory->Data && memptr <= (T*)(Memory->Data + Memory->UsedCount);
   }
 
 
