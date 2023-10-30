@@ -117,6 +117,7 @@ namespace Union {
     int ShowMessage( int flags ) const;
     int StdPrint() const;
     int StdPrintLine() const;
+    static void StdSetCodepage( int codepage );
 #pragma endregion
 
 #pragma region service_simple
@@ -885,6 +886,12 @@ namespace Union {
     WriteConsoleW( GetStdHandle( STD_OUTPUT_HANDLE ), ToChar(), GetLength(), &dw, nullptr );
     WriteConsoleW( GetStdHandle( STD_OUTPUT_HANDLE ), "\n", 1, &dw, nullptr );
     return dw;
+  }
+
+  template<typename T>
+  void UnionString<T>::StdSetCodepage( int codepage ) {
+    SetConsoleOutputCP( codepage );
+    SetConsoleCP( codepage );
   }
 #endif
 #pragma endregion
@@ -1989,6 +1996,8 @@ namespace Union {
         range.Data = Data;
         range.Begin = Data + pos + match.position();
         range.End = range.Begin + match.length();
+
+        // match.
       }
     }
     catch( std::regex_error e ) {}

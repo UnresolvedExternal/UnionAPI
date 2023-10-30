@@ -137,8 +137,9 @@ namespace Union {
       byte JumpToFirstNode[5];
       byte PopRegisters[6*8];
       byte PopF;
-      byte OriginalCode[15];
       byte JumpBack[6];
+      byte OriginalCode[15];
+      byte JumpBackDefault[6];
       ulong Protection;
       operator byte* () { return (byte*)this; }
     } Opcode;
@@ -255,7 +256,8 @@ namespace Union {
     x86_set_jump( (byte*)whereFrom, Opcode );
     VirtualProtect( whereFrom, SavedCodeLength, protection, &protection );
     x86_set_jump_dword_ptr( Opcode.JumpBack, (DWORD)&Registers.eip);
-    Registers.eip = (DWORD)farEnd;
+    x86_set_jump_dword_ptr( Opcode.JumpBackDefault, (DWORD)&ReturnAddress );
+    Registers.eip = (DWORD)Opcode.OriginalCode;
     ReturnAddress = farEnd;
     x86_set_mov_dword_to_ptr( Opcode.UpdateEIP, &Registers.eip, Registers.eip );
   }
