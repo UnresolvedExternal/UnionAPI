@@ -131,12 +131,12 @@ namespace Union {
   class UNION_API PartialHookTrampoline {
     friend class HookProviderPartial;
     struct {
-      byte PushF;
       byte PushRegisters[6*8];
+      byte PushF;
       byte UpdateEIP[10];
       byte JumpToFirstNode[5];
-      byte PopRegisters[6*8];
       byte PopF;
+      byte PopRegisters[6*8];
       byte JumpBack[6];
       byte OriginalCode[15];
       byte JumpBackDefault[6];
