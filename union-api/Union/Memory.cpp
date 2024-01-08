@@ -62,7 +62,7 @@ namespace Union {
     Free    = &free;
     Msize   = &_msize;
 
-    HMODULE module = GetModuleHandle( "shw32.dll" );
+    HMODULE module = GetModuleHandleA( "shw32.dll" );
     if( module /*&& module != Dll::FindNearestModule()*/ ) {
       void* shi_functions[] = {
         GetProcAddress( module, "shi_malloc" ),
@@ -200,7 +200,8 @@ namespace Union {
     }
     
     UnionSharedMemoryInstance = new SharedMemory();
-    StringANSI::Format( "New shared memory was initialized: %x", UnionSharedMemoryInstance ).StdPrintLine();
+    StringANSI::Format( "New shared memory was initialized: {0}",
+      ToHEX( UnionSharedMemoryInstance ) ).StdPrintLine();
   }
 
 
@@ -217,49 +218,53 @@ namespace Union {
   SharedMemory& SharedMemory::GetInstance() {
     if( UnionSharedMemoryInstance == nullptr ) {
       InitializeInstance();
+
+#ifndef _UNION_API_BUILD
       InitializeDll();
+#endif
+
     }
     return *UnionSharedMemoryInstance;
   }
 
 
-  /*UNION_API*/ void* MemAlloc( size_t size ) {
+  void* MemAlloc( size_t size ) {
     /*static*/ auto proc = SharedMemory::GetInstance().Malloc;
     return proc( size );
   }
 
 
-  /*UNION_API*/ void* MemCalloc( size_t count, size_t size ) {
+  void* MemCalloc( size_t count, size_t size ) {
     /*static*/ auto proc = SharedMemory::GetInstance().Calloc;
     return proc( count, size );
   }
 
 
-  /*UNION_API*/ void* MemRealloc( void* memory, size_t size ) {
+  void* MemRealloc( void* memory, size_t size ) {
     /*static*/ auto proc = SharedMemory::GetInstance().Realloc;
     return proc( memory, size );
   }
 
 
-  /*UNION_API*/ void MemFree( void* memory ) {
+  void MemFree( void* memory ) {
     /*static*/ auto proc = SharedMemory::GetInstance().Free;
     return proc( memory );
   }
 
 
-  /*UNION_API*/ void MemDelete( void* memory ) {
+  void MemDelete( void* memory ) {
     /*static*/ auto proc = SharedMemory::GetInstance().Free;
     return proc( memory );
   }
 
 
-  /*UNION_API*/ size_t MemSize( void* memory ) {
+  size_t MemSize( void* memory ) {
     /*static*/ auto proc = SharedMemory::GetInstance().Msize;
     return proc( memory );
   }
 
 
-  /*UNION_API*/ void* CreateSharedSingleton( const char* globalName, void* (*allocation)() ) {
+  void* CreateSharedSingleton( const char* globalName, void* (*allocation)() ) {
     auto& memory = SharedMemory::GetInstance();
     int index = memory.SearchSingleton( globalName );
     if( index != -1 )
@@ -273,7 +278,7 @@ namespace Union {
   }
 
 
-  /*UNION_API*/ void FreeSharedSingleton( const char* globalName, void(*destructor)(void*) ) {
+  void FreeSharedSingleton( const char* globalName, void(*destructor)(void*) ) {
     auto& memory = SharedMemory::GetInstance();
     int index = memory.SearchSingleton( globalName );
     if( index == -1 )
