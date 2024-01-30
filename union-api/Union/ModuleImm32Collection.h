@@ -176,8 +176,7 @@ namespace Union {
     bool isMainModule = dll->GetHandle() == GetModuleHandle( nullptr );
     bool isUnionDll = !isMainModule && dll->GetProcedureAddress( "UnionSharedMemoryInstance" );
 
-    DetourSetCodeModule(reinterpret_cast<HMODULE>(dll->GetHandle()), TRUE);
-    
+    DetourSetCodeModule( (HMODULE)dll->GetHandle(), TRUE );
     for( auto&& segment : moduleImm32->Segments ) {
       if( !isUnionDll ) {
         // Analize all instructions which
@@ -200,8 +199,7 @@ namespace Union {
         }
       }
     }
-    
-    DetourSetCodeModule(reinterpret_cast<HMODULE>(dll->GetHandle()), FALSE);
+    DetourSetCodeModule( (HMODULE)dll->GetHandle(), FALSE );
   }
 
 
@@ -210,7 +208,7 @@ namespace Union {
       if( moduleImm32->Dll == dll )
         return;
 
-    StringANSI::Format( "Analyzing module: {0}", dll->GetName() ).StdPrintLine();
+    StringANSI::Format( "Analyzing module: %s", dll->GetName() ).StdPrintLine();
 
     ModuleImm32Collection* moduleImm32 = new ModuleImm32Collection();
     moduleImm32->Dll = dll;

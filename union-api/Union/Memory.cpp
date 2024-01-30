@@ -218,53 +218,52 @@ namespace Union {
   SharedMemory& SharedMemory::GetInstance() {
     if( UnionSharedMemoryInstance == nullptr ) {
       InitializeInstance();
-
 #ifndef _UNION_API_BUILD
       InitializeDll();
 #endif
-
     }
     return *UnionSharedMemoryInstance;
   }
 
 
-  void* MemAlloc( size_t size ) {
+// #if !defined(_UNION_API_DLL) || defined(_UNION_API_BUILD)
+  /* UNION_API */ void* MemAlloc( size_t size ) {
     /*static*/ auto proc = SharedMemory::GetInstance().Malloc;
     return proc( size );
   }
 
 
-  void* MemCalloc( size_t count, size_t size ) {
+  /* UNION_API */ void* MemCalloc( size_t count, size_t size ) {
     /*static*/ auto proc = SharedMemory::GetInstance().Calloc;
     return proc( count, size );
   }
 
 
-  void* MemRealloc( void* memory, size_t size ) {
+  /* UNION_API */ void* MemRealloc( void* memory, size_t size ) {
     /*static*/ auto proc = SharedMemory::GetInstance().Realloc;
     return proc( memory, size );
   }
 
 
-  void MemFree( void* memory ) {
+  /* UNION_API */ void MemFree( void* memory ) {
     /*static*/ auto proc = SharedMemory::GetInstance().Free;
     return proc( memory );
   }
 
 
-  void MemDelete( void* memory ) {
+  /* UNION_API */ void MemDelete( void* memory ) {
     /*static*/ auto proc = SharedMemory::GetInstance().Free;
     return proc( memory );
   }
 
 
-  size_t MemSize( void* memory ) {
+  /* UNION_API */ size_t MemSize( void* memory ) {
     /*static*/ auto proc = SharedMemory::GetInstance().Msize;
     return proc( memory );
   }
 
 
-  void* CreateSharedSingleton( const char* globalName, void* (*allocation)() ) {
+  /* UNION_API */ void* CreateSharedSingleton( const char* globalName, void* (*allocation)() ) {
     auto& memory = SharedMemory::GetInstance();
     int index = memory.SearchSingleton( globalName );
     if( index != -1 )
@@ -278,7 +277,7 @@ namespace Union {
   }
 
 
-  void FreeSharedSingleton( const char* globalName, void(*destructor)(void*) ) {
+  /* UNION_API */ void FreeSharedSingleton( const char* globalName, void(*destructor)(void*) ) {
     auto& memory = SharedMemory::GetInstance();
     int index = memory.SearchSingleton( globalName );
     if( index == -1 )
@@ -288,4 +287,5 @@ namespace Union {
     if( address )
       destructor( address );
   }
+// #endif
 }
