@@ -176,6 +176,8 @@ namespace Union {
     bool isMainModule = dll->GetHandle() == GetModuleHandle( nullptr );
     bool isUnionDll = !isMainModule && dll->GetProcedureAddress( "UnionSharedMemoryInstance" );
 
+    DetourSetCodeModule(reinterpret_cast<HMODULE>(dll->GetHandle()), TRUE);
+    
     for( auto&& segment : moduleImm32->Segments ) {
       if( !isUnionDll ) {
         // Analize all instructions which
