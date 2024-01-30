@@ -200,6 +200,8 @@ namespace Union {
         }
       }
     }
+    
+    DetourSetCodeModule(reinterpret_cast<HMODULE>(dll->GetHandle()), FALSE);
   }
 
 
