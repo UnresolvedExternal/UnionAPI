@@ -71,7 +71,11 @@ namespace Union {
   inline void ProcessImm32Collection::AnalizeText( SegmentInfo* segment, OUT Array<void*>& addresses, OUT Array<void*>& offsets ) {
     byte* it = (byte*)segment->BaseAddress;
     byte* end = it + segment->Size - 5;
-    StringANSI::Format( "Analizing %t[%x]: %x-%x", segment->Name, segment->Size, it, end ).StdPrintLine();
+    StringANSI::Format( "Analizing {0}[{1}]: {2}-{3}",
+      segment->Name,
+      ToHEX( segment->Size ),
+      ToHEX( it ),
+      ToHEX( end ) ).StdPrintLine();
 
     while( it < end ) {
       byte instruction = *it;
@@ -96,7 +100,12 @@ namespace Union {
   inline void ProcessImm32Collection::AnalizeData( SegmentInfo* segment, OUT Array<void*>& addresses ) {
     byte* it = (byte*)segment->BaseAddress;
     byte* end = (byte*)segment->BaseAddress + segment->Size - 4;
-    StringANSI::Format( "Analizing %t[%x]: %x-%x", segment->Name, segment->Size, it, end ).StdPrintLine();
+    StringANSI::Format( "Analizing {0}[{1}]: {2}-{3}",
+      segment->Name,
+      ToHEX( segment->Size ),
+      ToHEX( it ),
+      ToHEX( end ) ).StdPrintLine();
+
     while( it < end ) {
       addresses.Insert( it );
       it += sizeof( void* );
@@ -122,7 +131,12 @@ namespace Union {
   inline void ProcessImm32Collection::AnalizeTextXCalls( SegmentInfo* segment, OUT Array<void*>& xcalls ) {
     byte* it = (byte*)segment->BaseAddress;
     byte* end = (byte*)segment->BaseAddress + segment->Size - 10;
-    StringANSI::Format( "Analizing %t[%x]: %x-%x", segment->Name, segment->Size, it, end ).StdPrintLine();
+    StringANSI::Format( "Analizing {0}[{1}]: {2}-{3}",
+      segment->Name,
+      ToHEX( segment->Size ),
+      ToHEX( it ),
+      ToHEX( end ) ).StdPrintLine();
+
     while( it < end ) {
       byte instruction = *it;
       if( IsXCallPtr( it ) )
@@ -192,14 +206,14 @@ namespace Union {
       if( moduleImm32->Dll == dll )
         return;
 
-    StringANSI::Format( "Analyzing module: %s", dll->GetName() ).StdPrintLine();
+    StringANSI::Format( "Analyzing module: {0}", dll->GetName() ).StdPrintLine();
 
     ModuleImm32Collection* moduleImm32 = new ModuleImm32Collection();
     moduleImm32->Dll = dll;
     FillModuleInfo( moduleImm32 );
     ModuleImm32Collections.Insert( moduleImm32 );
 
-    StringANSI::Format( "  Addresses: %i\n  Offsets: %i\n  XCalls: %i", 
+    StringANSI::Format( "  Addresses: {0}\n  Offsets: {1}\n  XCalls: {2}",
       moduleImm32->Addresses.GetCount(), moduleImm32->Offsets.GetCount(), moduleImm32->XCalls.GetCount() ).StdPrintLine();
   }
 
@@ -217,7 +231,7 @@ namespace Union {
 
 
   inline void ProcessImm32Collection::GetImm32For( void* target, ModuleImm32Collection* moduleImm32, OUT Array<void*>& addresses, OUT Array<void*>& offsets ) {
-    StringANSI::Format( "Getting Imm32 for %x", target ).StdPrintLine();
+    StringANSI::Format( "Getting Imm32 for {0}", ToHEX( target ) ).StdPrintLine();
     for( auto imm32 : moduleImm32->Addresses )
       if( *(void**)imm32 == target )
         addresses.Insert( imm32 );
@@ -235,7 +249,7 @@ namespace Union {
         offsets.Insert( imm32 );
     }
 
-    StringANSI::Format( "Found\n  addresses: %i\n  offsets: %i",
+    StringANSI::Format( "Found\n  addresses: {0}\n  offsets: {1}",
       addresses.GetCount(), offsets.GetCount() ).StdPrintLine();
   }
 

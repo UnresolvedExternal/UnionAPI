@@ -41,7 +41,7 @@ namespace Union {
     static Dll* Load( const wchar_t* dllName, bool asResource = false );
     static Dll* Find( const StringANSI& name );
     static Dll* Find( HANDLE module );
-    static HANDLE FindNearestModule( void* where = &FindNearestModule );
+    static HANDLE FindNearestModule( void* where = &CreateSharedSingleton );
   protected:
     static Array<Dll*>& GetDllList();
   };
