@@ -208,7 +208,7 @@ namespace Union {
       if( moduleImm32->Dll == dll )
         return;
 
-    StringANSI::Format( "Analyzing module: %s", dll->GetName() ).StdPrintLine();
+    StringANSI::Format( "Analyzing module: {0}", dll->GetName() ).StdPrintLine();
 
     ModuleImm32Collection* moduleImm32 = new ModuleImm32Collection();
     moduleImm32->Dll = dll;
@@ -266,7 +266,7 @@ namespace Union {
 
   inline void ProcessImm32Collection::GetImm32For( void* address, OUT Array<void*>& addresses, OUT Array<void*>& offsets ) {
     for( auto moduleImm32 : ModuleImm32Collections )
-      return GetImm32For( address, moduleImm32, addresses, offsets );
+      GetImm32For( address, moduleImm32, addresses, offsets );
   }
 #endif
 }
